@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,11 +21,11 @@ Route::get('/user', function (Request $request) {
 
 Route::group(['prefix' => 'v1'], function () {
 
-    Route::post('register', [App\Http\Controllers\API\AuthController::class, 'register']);
-    Route::post('login', [App\Http\Controllers\API\AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
     // logout
-    Route::post('logout', [App\Http\Controllers\API\AuthController::class, 'logout']);
+    Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     // end point check user
-    Route::get('user', [App\Http\Controllers\API\AuthController::class, 'fetch']);
+    Route::get('user', [AuthController::class, 'fetch']);
 
 });
