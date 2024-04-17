@@ -14,5 +14,15 @@ class Type extends Model
         'id'
     ];
 
+    protected $fillable = [
+        'name',
+        'description',
+        'slug',
+        'cover',
+    ];
 
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'type_id');
+    }
 }
