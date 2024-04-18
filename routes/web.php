@@ -5,7 +5,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CourseQuestionController;
 use App\Http\Controllers\CourseStudentController;
 use App\Http\Controllers\LearningController;
-use App\Http\Controllers\StudentAnswer;
+use App\Http\Controllers\StudentAnswerController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
