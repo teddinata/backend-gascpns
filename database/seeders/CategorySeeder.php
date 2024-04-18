@@ -18,7 +18,8 @@ class CategorySeeder extends Seeder
         DB::table('categories')->insert([
             [
             'type_id' => 1, // 'SKD (Seleksi Kompetensi Dasar)'
-            'name' => 'TWK (Tes Wawasan Kebangsaan)',
+            'name' => 'TWK',
+            'full_name' => 'Tes Wawasan Kebangsaan',
             'slug' => 'tes-wawasan-kebangsaan',
             'description' => 'Kategori ini berisi materi-materi yang berkaitan dengan Tes Wawasan Kebangsaan (TWK) CPNS',
             'created_at' => Carbon::now(),
@@ -26,7 +27,8 @@ class CategorySeeder extends Seeder
             ],
             [
             'type_id' => 1, // 'SKD (Seleksi Kompetensi Dasar)'
-            'name' => 'TIU (Tes Intelegensi Umum)',
+            'name' => 'TIU',
+            'full_name' => 'Tes Intelegensi Umum',
             'slug' => 'tes-intelegensi-umum',
             'description' => 'Kategori ini berisi materi-materi yang berkaitan dengan Tes Intelegensi Umum (TIU) CPNS',
             'created_at' => Carbon::now(),
@@ -34,7 +36,8 @@ class CategorySeeder extends Seeder
             ],
             [
             'type_id' => 1, // 'SKD (Seleksi Kompetensi Dasar)'
-            'name' => 'TKP (Tes Karakteristik Pribadi)',
+            'name' => 'TKP',
+            'full_name' => 'Tes Karakteristik Pribadi',
             'slug' => 'tes-karakteristik-pribadi',
             'description' => 'Kategori ini berisi materi-materi yang berkaitan dengan Tes Karakteristik Pribadi (TKP) CPNS',
             'created_at' => Carbon::now(),

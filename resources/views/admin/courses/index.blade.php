@@ -1,7 +1,17 @@
 @extends('layouts.master')
-@section('title', 'Create Course')
+@section('title', 'Manage Course')
 
 @section('content')
+
+{{-- section success --}}
+@if (session('success'))
+<p class="flex items-center justify-between p-4 rounded-[4px] bg-[#D5EFFE] font-bold text-sm text-[#3DB475] mb-5">
+    {{ session('success') }}
+    <button onclick="this.parentElement.remove()" class="text-[#3DB475]">&times;</button>
+</p>
+@endif
+
+{{-- section error --}}
 <div class="flex flex-col px-5 mt-5">
     <div class="w-full flex justify-between items-center">
         <div class="flex flex-col gap-1">
@@ -40,7 +50,7 @@
             </div>
         </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
-            <p class="font-semibold">{{ $soal->created_at->format('d M Y') }}</p>
+            <p class="font-semibold">{{ $soal->created_at->format('d M Y H:i') }}</p>
         </div>
         @if ($soal->category->name == 'TIU')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
@@ -49,7 +59,6 @@
         @elseif ($soal->category->name == 'TKP')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
             <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->category->name }}</p>
-
         </div>
         @elseif ($soal->category->name == 'TWK')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
@@ -70,16 +79,17 @@
                     <a href="course-students.html" class="flex items-center justify-between font-bold text-sm w-full">
                         Students
                     </a>
-                    <a href="course-details.html" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.courses.edit', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Edit Course
                     </a>
-                    <form action="{{ route('dashboard.courses.destroy', $soal->id) }}" method="POST">
+                    {{-- <form action="{{ route('dashboard.courses.destroy', $soal->id) }}" method="POST">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]">
+                        <button type="submit" data-confirm-delete="true" class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]">
                             Delete
                         </button>
-                    </form>
+                    </form> --}}
+                    <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]" data-confirm-delete="true">Delete</a>
                 </div>
             </div>
         </div>
@@ -103,7 +113,7 @@
 {{-- show data 5 of 10 example --}}
 
 <div class="flex text-[#7F8190] gap-4 items-center mt-[37px] px-5">
-    Show data {{ $courses->firstItem() }} of {{ $courses->lastItem() }}
+    Show data {{ $courses->firstItem() }} to {{ $courses->lastItem() }} of {{ $courses->total() }} total data
 </div>
 <div id="pagination" class="flex gap-4 items-center mt-[30px] px-5">
     @if ($courses->onFirstPage())
@@ -113,7 +123,7 @@
     @endif
 
     @for ($i = 1; $i <= $courses->lastPage(); $i++)
-        <a href="{{ $courses->url($i) }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]">{{ $i }}</a>
+        <a href="{{ $courses->url($i) }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190] {{ $courses->currentPage() == $i ? 'bg-[#0A090B] text-white' : '' }}">{{ $i }}</a>
     @endfor
 
     @if ($courses->hasMorePages())
@@ -149,4 +159,25 @@
         }
     });
 </script>
+
+<script>
+    function confirmDelete() {
+        // slert with sweet alert
+        swal({
+            title: "Are you sure?",
+            text: "Once deleted this, you will not be able to recover this data!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                // if user click ok, then submit the form
+                event.target.parentElement.submit();
+            }
+        });
+
+    }
+</script>
+
 @endpush

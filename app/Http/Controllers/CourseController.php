@@ -23,6 +23,10 @@ class CourseController extends Controller
         //
         $courses = Course::orderBy('id', 'desc')->paginate(5);
 
+        $title = 'Delete Course!';
+        $text = "Are you sure you want to delete?";
+        confirmDelete($title, $text);
+
         return view('admin.courses.index', compact('courses'));
     }
 
@@ -89,28 +93,76 @@ class CourseController extends Controller
      */
     public function edit(Course $course)
     {
-        //
+        // get the course
+        $categories = Category::all();
+        return view('admin.courses.edit', compact('course', 'categories'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Course $course)
+    public function update(CourseRequests $request, Course $course)
     {
-        //
+        // validate the request
+        $validated = $request->validated();
+
+        // store the data with beginTransaction
+        DB::beginTransaction();
+
+        try {
+            if ($request->hasFile('cover')) {
+                $coverPath = $request->file('cover')->store('course_cover', 'public');
+                $validated['cover'] = $coverPath;
+                // save with original name
+                // $cover = $request->file('cover');
+                // $coverName = time().'_'.$cover->getClientOriginalName();
+                // $cover->move(public_path('course_cover'), $coverName);
+                // $validated['cover'] = $coverName;
+            } else {
+                $validated['cover'] = $course->cover;
+            }
+
+            $validated['slug'] = Str::slug($validated['name']);
+            $course->update($validated);
+
+            DB::commit();
+
+            return redirect()->route('dashboard.courses.index')->with('success', 'Course updated successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $error = ValidationException::withMessages([
+                'error' => [
+                    'Course failed to update '. $e->getMessage()
+                ]
+            ]);
+            throw $error;
+            // return redirect()->back()->with('error', 'Course failed to update');
+        }
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Course $course)
     {
-        // delete the course
-        // find the course
-        $course = Course::find($id);
+        // store the data with beginTransaction
+        DB::beginTransaction();
 
-        // delete the course
-        $course->delete();
-        return redirect()->route('dashboard.courses.index')->with('success', 'Course deleted successfully');
+        try {
+            $course->delete();
+
+            DB::commit();
+
+            return redirect()->route('dashboard.courses.index')->with('success', 'Course deleted successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $error = ValidationException::withMessages([
+                'error' => [
+                    'Course failed to delete '. $e->getMessage()
+                ]
+            ]);
+            throw $error;
+            // return redirect()->back()->with('error', 'Course failed to delete');
+        }
     }
 }

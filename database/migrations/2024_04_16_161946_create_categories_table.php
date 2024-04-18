@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('full_name')->nullable();
             $table->string('slug');
             $table->text('description')->nullable();
             $table->string('cover')->nullable();

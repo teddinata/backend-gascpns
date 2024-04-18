@@ -1,6 +1,16 @@
 @extends('layouts.master')
 @section('title', 'Create Course')
 
+@push('styles')
+<style>
+    #saveCourseBtn:disabled {
+        background-color: #CCCCCC;
+        color: #666666;
+        cursor: not-allowed;
+    }
+</style>
+@endpush
+
 @section('content')
 
 @if($errors->any())
@@ -20,7 +30,7 @@
     <div class="breadcrumb flex items-center gap-[30px]">
         <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Home</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
-        <a href="index.html" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
+        <a href="{{ route('dashboard.courses.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
         <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold ">New Course</a>
     </div>
@@ -114,7 +124,7 @@
                     <img src="{{ asset('images/icons/tick-circle.svg') }}" alt="icon">
                 </div>
             </a>
-            <a href="#" class="group relative flex w-full items-center gap-[14px] p-[14px_16px] border border-[#EEEEEE] rounded-full transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B] disabled:border-[#EEEEEE]" data-group="publish-date" aria-checked="false" onclick="event.preventDefault()" disabled>
+            <a href="#" class="group relative flex w-full items-center gap-[14px] p-[14px_16px] border border-[#EEEEEE] rounded-full transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B] disabled:border-[#EEEEEE]" data-group="publish-date" aria-checked="false" onclick="event.preventDefault()">
                 <div class="w-[24px] h-[24px] flex shrink-0 overflow-hidden">
                     <img src="{{ asset('images/icons/calendar-add-disabled.svg') }}" class="w-full h-full" alt="icon">
                 </div>
@@ -138,17 +148,18 @@
             </select>
         </div>
     </div>
-    <label class="font-semibold flex items-center gap-[10px]"
-        ><input
-        type="radio"
-        name="tnc"
-        class="w-[24px] h-[24px] appearance-none checked:border-[3px] checked:border-solid checked:border-white rounded-full checked:bg-[#2B82FE] ring ring-[#EEEEEE]"
-        checked/>
+    <label class="font-semibold flex items-center gap-[10px]">
+        <input
+            type="checkbox"
+            name="tnc"
+            id="tncCheckbox"
+            class="w-[24px] h-[24px] appearance-none checked:border-[3px] checked:border-solid checked:border-white rounded-full checked:bg-[#2B82FE] ring ring-[#EEEEEE]"
+        />
         I have read terms and conditions
     </label>
     <div class="flex items-center gap-5">
         <a href="" class="w-full h-[52px] p-[14px_20px] bg-[#0A090B] rounded-full font-semibold text-white transition-all duration-300 text-center">Add to Draft</a>
-        <button type="submit" class="w-full h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Save Course</button>
+        <button type="submit" id="saveCourseBtn" class="w-full h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center" disabled>Save Course</button>
     </div>
 </form>
 @endsection
@@ -176,6 +187,15 @@
             fileInput.setAttribute('data-empty', 'true');
         }
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        const tncCheckbox = document.getElementById('tncCheckbox');
+        const saveCourseBtn = document.getElementById('saveCourseBtn');
+
+        tncCheckbox.addEventListener('change', function() {
+            saveCourseBtn.disabled = !this.checked;
+        });
+    });
+
 </script>
 
 <script>
