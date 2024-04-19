@@ -18,7 +18,17 @@
             <p class="font-extrabold text-[30px] leading-[45px]">Manage Course</p>
             <p class="text-[#7F8190]">Provide high quality for best students</p>
         </div>
-        <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add New Course</a>
+        <div class="flex items-center space-x-5"> <!-- Container untuk tombol dan form search -->
+            <form class="search flex items-center w-[500px] h-[52px] p-[10px_16px] rounded-full border border-[#EEEEEE]">
+                <input type="text" class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none" placeholder="Search by course name, etc" name="search">
+
+                {{-- <input type="text" id="searchInput" class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none" placeholder="Search by course name, etc" name="search"> --}}
+                <button type="submit" class="w-8 h-8 flex items-center justify-center">
+                    <img src="{{ asset('images/icons/search.svg') }}" alt="icon">
+                </button>
+            </form>
+            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add New Course</a>
+        </div>
     </div>
 </div>
 <div class="course-list-container flex flex-col px-5 mt-[30px] gap-[30px]">
@@ -31,6 +41,10 @@
         </div>
         <div class="flex justify-center shrink-0 w-[350px]">
             <p class="text-[#7F8190]">Category</p>
+        </div>
+        {{-- status --}}
+        <div class="flex justify-center shrink-0 w-[120px]">
+            <p class="text-[#7F8190]">Status</p>
         </div>
         <div class="flex justify-center shrink-0 w-[120px]">
             <p class="text-[#7F8190]">Action</p>
@@ -66,6 +80,15 @@
         </div>
         @endif
 
+        {{-- badge status --}}
+        <div class="flex shrink-0 w-[120px] items-center justify-center">
+            @if ($soal->status == 1)
+            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->status == 1 ? 'Published' : 'Draft' }}</p>
+            @else
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $soal->status == 1 ? 'Published' : 'Draft' }}</p>
+            @endif
+        </div>
+
         <div class="flex shrink-0 w-[120px] items-center">
             <div class="relative h-[41px]">
                 <div class="menu-dropdown w-[120px] max-h-[41px] overflow-hidden absolute top-0 p-[10px_16px] bg-white flex flex-col gap-3 border border-[#EEEEEE] transition-all duration-300 hover:shadow-[0_10px_16px_0_#0A090B0D] rounded-[18px]">
@@ -100,7 +123,6 @@
         <p class="font-bold text-[#7F8190]">No Course Found</p>
     </div>
     @endforelse
-
 </div>
 {{-- <div id="pagiantion" class="flex gap-4 items-center mt-[37px] px-5">
     <button class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]">1</button>
@@ -179,5 +201,111 @@
 
     }
 </script>
+
+{{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"
+integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script>
+    $(document).ready(function(){
+        $('#searchInput').on('input', function(){
+            var searchText = $(this).val();
+            $.ajax({
+                url: '{{ route("dashboard.courses.search") }}',
+                type: 'GET',
+                data: {search: searchText},
+                success: function(response){
+                    // Handle response dari server, misalnya update daftar hasil pencarian di halaman
+                    console.log(response);
+
+                    $('.course-list-container').empty();
+                    if(response.length > 0) {
+                        response.forEach(function(course){
+                        var courseItem = `
+                            <div class="list-items flex flex-nowrap justify-between pr-10">
+                                <div class="flex shrink-0 w-[300px]">
+                                    <div class="flex items center gap-4">
+                                        <div class="w-16 h-16 flex shrink-0 overflow-hidden rounded-full">
+                                            <img src="${course.cover}" class="object-cover" alt="thumbnail">
+                                        </div>
+                                        <div class="flex flex-col gap-[2px]">
+                                            <p class="font-bold text-lg">${course.name}</p>
+                                            <p class="text-[#7F8190]">Beginners</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex shrink-0 w-[150px] items-center justify-center">
+                                    <p class="font-semibold">${course.created_at}</p>
+                                </div>
+                                <div class="flex shrink-0 w-[350px] items-center justify-center">
+                                    <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">${course.category}</p>
+                                </div>
+                                <div class="flex shrink-0 w-[120px] items-center justify-center">
+                                    <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">${course.status}</p>
+                                </div>
+                                <div class="flex shrink-0 w-[120px] items-center">
+                                    <div class="relative h-[41px]">
+                                        <div class="menu-dropdown w-[120px] max-h-[41px] overflow-hidden absolute top-0 p-[10px_16px] bg-white flex flex-col gap-3 border border-[#EEEEEE] transition-all duration-300 hover:shadow-[0_10px_16px_0_#0A090B0D] rounded-[18px]">
+                                            <button onclick="toggleMaxHeight(this)" class="flex items-center justify-between font-bold text-sm w-full">
+                                                menu
+                                                <img src="{{ asset('images/icons/arrow-down.svg') }}" alt="icon">
+                                            </button>
+                                            <a href="#" class="flex items-center justify-between font-bold text-sm w-full">
+                                                Manage
+                                            </a>
+                                            <a href="course-students.html" class="flex items center justify-between font-bold text-sm w-full">
+                                                Students
+                                            </a>
+                                            <a href="${dashboard.courses.edit}" class="flex items center justify-between font-bold text-sm w-full">
+                                                Edit Course
+                                            </a>
+                                            <a href="${dashboard.courses.destroy}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]" data-confirm-delete="true">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        $('.course-list-container').append(courseItem);
+                    });
+                    updatePagination(response);
+                    } else {
+                        var emptyState = `
+                            <div class="flex flex-col items-center justify-center w-full h-[200px] border border-[#EEEEEE] rounded-[14px]">
+                                <img src="{{ asset('images/icons/setting-2.svg') }}" alt="empty-state" class="mb-5">
+                                <p class="font-bold text-[#7F8190]">No Course Found</p>
+                            </div>
+                        `;
+                        $('.course-list-container').append(emptyState);
+                    }
+
+
+                },
+                error: function(xhr){
+                    // Handle error
+                    console.error(xhr);
+                }
+            });
+        });
+    });
+
+    function updatePagination(response) {
+        // Ambil informasi pagination dari respons
+        var currentPage = response.current_page;
+        var lastPage = response.last_page;
+
+        // Bangun ulang link pagination
+        var paginationHtml = '';
+        for (var i = 1; i <= lastPage; i++) {
+            if (i == currentPage) {
+                paginationHtml += '<span class="current">' + i + '</span>';
+            } else {
+                paginationHtml += '<a href="' + response.path + '?page=' + i + '">' + i + '</a>';
+            }
+        }
+
+        // Update elemen pagination dengan HTML baru
+        $('.pagination').html(paginationHtml);
+    }
+</script>
+
 
 @endpush

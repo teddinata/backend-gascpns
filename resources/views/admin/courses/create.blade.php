@@ -8,6 +8,35 @@
         color: #666666;
         cursor: not-allowed;
     }
+
+    .toggle-switch {
+    width: 48px;
+    height: 24px;
+    background-color: #ccc;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    }
+
+    .toggle-switch::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s ease-in-out, background-color 0.2s ease-in-out;
+    }
+
+    #toggle:checked + .toggle-switch::before {
+    transform: translateX(24px);
+    }
+
+    #toggle:checked + .toggle-switch {
+    background-color: #2b82fe; /* Mengubah warna latar belakang toggle switch menjadi biru ketika status dipublikasikan */
+    }
 </style>
 @endpush
 
@@ -40,11 +69,12 @@
     <p class="text-[#7F8190]">Provide high quality for best students</p>
 </div>
 
-<form enctype="multipart/form-data" method="post" class="flex flex-col gap-[30px] w-[500px] mx-[70px] mt-10"
+<form enctype="multipart/form-data" method="post" class="flex flex-col gap-[30px] w-[500px] mx-[70px] mt-10" id="createCourseForm"
     action="{{ route('dashboard.courses.store') }}">
     @csrf
+    <input type="hidden" name="category_id" id="selectedCategoryId">
     <div class="flex gap-5 items-center">
-        <input type="file" name="cover" id="icon" class="peer hidden" onchange="previewFile()" data-empty="true" required>
+        <input type="file" name="cover" id="icon" class="peer hidden" onchange="previewFile()" data-empty="true">
         <div class="relative w-[100px] h-[100px] rounded-full overflow-hidden peer-data-[empty=true]:border-[3px] peer-data-[empty=true]:border-dashed peer-data-[empty=true]:border-[#EEEEEE]">
             <div class="relative file-preview z-10 w-full h-full hidden">
                 <img src="" class="thumbnail-icon w-full h-full object-cover" alt="thumbnail">
@@ -64,7 +94,7 @@
             <input type="text" class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none" placeholder="Write your better course name" name="name" required>
         </div>
     </div>
-    <div class="group/category flex flex-col gap-[10px]">
+    {{-- <div class="group/category flex flex-col gap-[10px]">
         <p class="font-semibold">Category</p>
         <div class="peer flex items-center p-[12px_16px] rounded-full border border-[#EEEEEE] transition-all duration-300 focus-within:border-2 focus-within:border-[#0A090B]">
             <div class="mr-[10px] w-6 h-6 flex items-center justify-center overflow-hidden">
@@ -79,43 +109,46 @@
                 @endforelse
             </select>
         </div>
-    </div>
+    </div> --}}
     <div class="flex flex-col gap-[10px]">
-        <p class="font-semibold">Course Type</p>
+        <p class="font-semibold">Category</p>
         <div class="flex gap-5 items-center">
-            <a href="#" class="group relative flex flex-col w-full items-center gap-5 p-[30px_16px] border border-[#EEEEEE] rounded-[30px] transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="course-type" aria-checked="false" onclick="handleActiveAnchor(this)">
+            @forelse ($categories as $category)
+            <a href="#" class="group relative flex flex-col w-full items-center gap-5 p-[30px_16px] border border-[#EEEEEE] rounded-[30px] transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="course-type" aria-checked="false" onclick="handleActiveAnchor(this)" data-category-id="{{ $category->id }}">
                 <div class="w-[70px] h-[70px] flex shrink-0 overflow-hidden">
-                    <img src="{{ asset('images/icons/onboarding.svg') }}" class="w-full h-full" alt="icon">
+                    <!-- Tambahkan kondisi untuk menampilkan ikon sesuai kategori -->
+                    @if ($category->name == 'TIU')
+                        <img src="{{ asset('images/icons/onboarding.svg') }}" class="w-full h-full" alt="icon">
+                    @elseif ($category->name == 'TWK')
+                        <img src="{{ asset('images/icons/module.svg') }}" class="w-full h-full" alt="icon">
+                    @elseif ($category->name == 'TKP')
+                        <img src="{{ asset('images/icons/job.svg') }}" class="w-full h-full" alt="icon">
+                    @endif
                 </div>
-                <span class="text-center mx-auto font-semibold">Onboarding</span>
+                <span class="text-center mx-auto font-semibold">{{ $category->name }}</span>
                 <div class="absolute transform -translate-x-1/2 -translate-y-1/2 top-[24px] right-0 hidden transition-all duration-300 group-aria-checked:block">
                     <img src="{{ asset('images/icons/tick-circle.svg') }}" alt="icon">
                 </div>
             </a>
-            <a href="#" class="group relative flex flex-col w-full items-center gap-5 p-[30px_16px] border border-[#EEEEEE] rounded-[30px] transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="course-type" aria-checked="false" onclick="handleActiveAnchor(this)">
-                <div class="w-[70px] h-[70px] flex shrink-0 overflow-hidden">
-                    <img src="{{ asset('images/icons/module.svg') }}" class="w-full h-full" alt="icon">
-                </div>
-                <span class="text-center mx-auto font-semibold">CBT Module</span>
-                <div class="absolute transform -translate-x-1/2 -translate-y-1/2 top-[24px] right-0 hidden transition-all duration-300 group-aria-checked:block">
-                    <img src="{{ asset('images/icons/tick-circle.svg') }}" alt="icon">
-                </div>
-            </a>
-            <a href="#" class="group relative flex flex-col w-full items-center gap-5 p-[30px_16px] border border-[#EEEEEE] rounded-[30px] transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="course-type" aria-checked="false" onclick="handleActiveAnchor(this)">
-                <div class="w-[70px] h-[70px] flex shrink-0 overflow-hidden">
-                    <img src="{{ asset('images/icons/job.svg') }}" class="w-full h-full" alt="icon">
-                </div>
-                <span class="text-center mx-auto font-semibold">Job-Ready</span>
-                <div class="absolute transform -translate-x-1/2 -translate-y-1/2 top-[24px] right-0 hidden transition-all duration-300 group-aria-checked:block">
-                    <img src="{{ asset('images/icons/tick-circle.svg') }}" alt="icon">
-                </div>
-            </a>
+            @empty
+                {{-- empty no category available --}}
+                <a href="#" class="group relative flex flex-col w-full items-center gap-5 p-[30px_16px] border border-[#EEEEEE] rounded-[30px] transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="course-type" aria-checked="false" onclick="event.preventDefault()">
+                    <div class="w-[70px] h-[70px] flex shrink-0 overflow-hidden">
+                        <img src="{{ asset('images/icons/onboarding.svg') }}" class="w-full h-full" alt="icon">
+                    </div>
+                    <span class="text-center mx-auto font-semibold">No Category Available</span>
+                    <div class="absolute transform -translate-x-1/2 -translate-y-1/2 top-[24px] right-0 hidden transition-all duration-300 group-aria-checked:block">
+                        <img src="{{ asset('images/icons/tick-circle.svg') }}" alt="icon">
+                    </div>
+                </a>
+            @endforelse
         </div>
     </div>
-    <div class="flex flex-col gap-[10px]">
+    {{-- <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Publish Date</p>
         <div class="flex gap-[10px] items-center">
-            <a href="#" class="group relative flex w-full items-center gap-[14px] p-[14px_16px] border border-[#EEEEEE] rounded-full transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="publish-date" aria-checked="false" onclick="handleActiveAnchor(this)">
+            <a href="#" class="group relative flex w-full items-center gap-[14px] p-[14px_16px] border border-[#EEEEEE] rounded-full transition-all duration-300 aria-checked:border-2 aria-checked:border-[#0A090B]" data-group="publish-date" aria-checked="false" onclick="handleActivePublish(this)">
+                <input type="hidden" name="published_at" id="published_at" value="">
                 <div class="w-[24px] h-[24px] flex shrink-0 overflow-hidden">
                     <img src="{{ asset('images/icons/clock.svg') }}" class="w-full h-full" alt="icon">
                 </div>
@@ -134,20 +167,33 @@
                 </div>
             </a>
         </div>
-    </div>
-    <div class="group/access flex flex-col gap-[10px]">
+    </div> --}}
+    {{-- <div class="group/access flex flex-col gap-[10px]">
         <p class="font-semibold">Access Type</p>
         <div class="peer flex items-center p-[12px_16px] rounded-full border border-[#EEEEEE] transition-all duration-300 focus-within:border-2 focus-within:border-[#0A090B]">
             <div class="mr-[10px] w-6 h-6 flex items-center justify-center overflow-hidden">
                 <img src="{{ asset('images/icons/security-user.svg') }}" class="w-full h-full object-contain" alt="icon">
             </div>
-            <select id="access" class="pl-1 font-semibold focus:outline-none w-full text-[#0A090B] invalid:text-[#7F8190] invalid:font-normal appearance-none bg-[url('{{ asset('images/icons/arrow-down.svg') }}')] bg-no-repeat bg-right" name="access" required>
+            <select id="access" class="pl-1 font-semibold focus:outline-none w-full text-[#0A090B] invalid:text-[#7F8190] invalid:font-normal appearance-none bg-[url('{{ asset('images/icons/arrow-down.svg') }}')] bg-no-repeat bg-right" name="access" >
                 <option value="" disabled selected hidden>Choose the access type</option>
                 <option value="a" class="font-semibold">Digital Marketing</option>
                 <option value="b" class="font-semibold">Web Development</option>
             </select>
         </div>
+    </div> --}}
+
+    <div class="flex flex-col gap-[10px]">
+        <p class="font-semibold">Status</p>
+        <div class="flex items-center gap-5">
+            <label for="toggle" class="flex items-center gap-[10px]">
+                <input type="checkbox" id="toggle" class="hidden" value="0">
+                <div class="toggle-switch"></div>
+                <span id="toggleText" class="text-gray-600">Draft</span>
+            </label>
+        </div>
     </div>
+
+
     <label class="font-semibold flex items-center gap-[10px]">
         <input
             type="checkbox"
@@ -158,7 +204,7 @@
         I have read terms and conditions
     </label>
     <div class="flex items-center gap-5">
-        <a href="" class="w-full h-[52px] p-[14px_20px] bg-[#0A090B] rounded-full font-semibold text-white transition-all duration-300 text-center">Add to Draft</a>
+        <a href="{{ route('dashboard.courses.index') }}" class="w-full h-[52px] p-[14px_20px] bg-[#0A090B] rounded-full font-semibold text-white transition-all duration-300 text-center">Cancel</a>
         <button type="submit" id="saveCourseBtn" class="w-full h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center" disabled>Save Course</button>
     </div>
 </form>
@@ -196,10 +242,38 @@
         });
     });
 
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('toggle');
+        const toggleText = document.getElementById('toggleText');
+
+        toggle.addEventListener('change', function() {
+            const status = toggle.checked ? 1 : 0;
+            toggleText.textContent = toggle.checked ? 'Publish' : 'Draft';
+    });
+});
 </script>
 
 <script>
     function handleActiveAnchor(element) {
+        event.preventDefault();
+
+        const group = element.getAttribute('data-group');
+        var categoryId = element.getAttribute('data-category-id');
+        document.getElementById('selectedCategoryId').value = categoryId;
+
+        // Reset all elements' aria-checked to "false" within the same data-group
+        const allElements = document.querySelectorAll(`[data-group="${group}"][aria-checked="true"]`);
+        allElements.forEach(el => {
+            el.setAttribute('aria-checked', 'false');
+        });
+
+        // Set the clicked element's aria-checked to "true"
+        element.setAttribute('aria-checked', 'true');
+
+
+    }
+
+    function handleActivePublish(element) {
         event.preventDefault();
 
         const group = element.getAttribute('data-group');
@@ -212,6 +286,20 @@
 
         // Set the clicked element's aria-checked to "true"
         element.setAttribute('aria-checked', 'true');
+
+        // Set value based on the clicked element
+        const isChecked = element.getAttribute('aria-checked') === 'true';
+        const input = document.getElementById('published_at'); // Assuming the ID of the input element is 'published_at'
+
+        if (isChecked) {
+            // Jika diklik, set nilai input menjadi tanggal saat ini
+            const currentDate = new Date().toISOString().slice(0, 10);
+            input.value = currentDate;
+        } else {
+            // Jika tidak diklik, set nilai input menjadi null
+            input.value = null;
+        }
     }
+
 </script>
 @endpush

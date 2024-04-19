@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
 
+        Route::get('/courses/search', [CourseController::class, 'search'])->name('courses.search');
         Route::resource('courses', CourseController::class)->middleware('role:teacher');
 
         Route::get('/course/question/create/{course}', [CourseQuestionController::class, 'create'])

@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('slug');
             $table->text('description')->nullable();
             $table->string('cover')->nullable();
+            $table->datetime('published_at')->nullable();
+            $table->boolean('status')->default(0)->comment('0: draft, 1: published');
+            $table->boolean('agree_tnc')->default(0)->comment('0: disagree, 1: agree');
 
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();

@@ -19,6 +19,9 @@ class Course extends Model
         'description',
         'slug',
         'cover',
+        'published_at',
+        'status',
+        'agree_tnc',
         'category_id'
     ];
 

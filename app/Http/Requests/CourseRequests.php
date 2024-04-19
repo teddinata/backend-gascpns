@@ -27,6 +27,9 @@ class CourseRequests extends FormRequest
             'description'       => ['nullable', 'string'],
             // cover with png or jpg or jpeg format
             'cover'             => ['nullable', 'image', 'mimes:png,jpg,jpeg'],
+            'published_at'      => ['nullable', 'date'],
+            'status'            => ['nullable', 'boolean'],
+            'agree_tnc'         => ['nullable', 'boolean'],
         ];
     }
 }
