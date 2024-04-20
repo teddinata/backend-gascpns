@@ -1,14 +1,25 @@
 @extends('layouts.master')
-@section('title', 'Manage Course')
+@section('title', 'List Course')
 
 @section('content')
 
-{{-- section success --}}
+@if ($errors->any())
+<div class="flex flex-col gap-5 px-[70px] mt-[30px]">
+    <div class="flex items center gap-2 bg-[#FEE2E2] p-4 w-[500px] rounded-[10px]">
+        <img src="{{ asset('images/icons/closed.png') }}" alt="icon" class="w-6 h-6">
+        <p class="font-medium text-red-500">{{ $errors->first() }}</p>
+    </div>
+</div>
+@endif
+
 @if (session('success'))
-<p class="flex items-center justify-between p-4 rounded-[4px] bg-[#D5EFFE] font-bold text-sm text-[#3DB475] mb-5">
-    {{ session('success') }}
-    <button onclick="this.parentElement.remove()" class="text-[#3DB475]">&times;</button>
-</p>
+<div class="flex flex-col gap-5 px-[70px] mt-[30px]">
+    <div class="flex items center gap-2 bg-[#D5EFFE] p-4 w-[500px] rounded-[10px]">
+        <img src="{{ asset('images/icons/shield-check.png') }}" alt="icon" class="w-6 h-6">
+        <p class="font-medium text-green-500">{{ session('success') }}</p>
+        <button onclick="this.parentElement.remove()" class="text-[#3DB475]">&times;</button>
+    </div>
+</div>
 @endif
 
 {{-- section error --}}
@@ -68,11 +79,11 @@
         </div>
         @if ($soal->category->name == 'TIU')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $soal->category->name }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->category->name }}</p>
         </div>
         @elseif ($soal->category->name == 'TKP')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->category->name }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $soal->category->name }}</p>
         </div>
         @elseif ($soal->category->name == 'TWK')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
@@ -96,7 +107,7 @@
                         menu
                         <img src="{{ asset('images/icons/arrow-down.svg') }}" alt="icon">
                     </button>
-                    <a href="#" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.courses.show', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Manage
                     </a>
                     <a href="course-students.html" class="flex items-center justify-between font-bold text-sm w-full">
@@ -112,7 +123,8 @@
                             Delete
                         </button>
                     </form> --}}
-                    <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]" data-confirm-delete="true">Delete</a>
+                    <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
+                        data-confirm-delete="true">Delete</a>
                 </div>
             </div>
         </div>
@@ -180,26 +192,22 @@
             });
         }
     });
-</script>
 
-<script>
-    function confirmDelete() {
-        // slert with sweet alert
-        swal({
-            title: "Are you sure?",
-            text: "Once deleted this, you will not be able to recover this data!",
-            icon: "warning",
-            buttons: true,
-            dangerMode: true,
-        })
-        .then((willDelete) => {
-            if (willDelete) {
-                // if user click ok, then submit the form
-                event.target.parentElement.submit();
-            }
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
         });
+    @endif
 
-    }
+    @if($errors->any())
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ $errors->first() }}',
+        });
+    @endif
 </script>
 
 {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> --}}

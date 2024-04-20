@@ -3,7 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\CourseStudent;
+use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use Illuminate\Validation\ValidationException;
+use RealRashid\SweetAlert\Facades\Alert;
+
 
 class CourseStudentController extends Controller
 {
@@ -18,17 +24,50 @@ class CourseStudentController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Course $course)
     {
-        //
+        $students = $course->students()->orderBy('id', 'desc')->get();
+        return view('admin.students.add_students', compact('course', 'students'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Course $course)
     {
-        //
+        // add students to course
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if(!$user){
+            $error = ValidationException::withMessages([
+                'system_error' => ['Email tidak ditemukan'],
+            ]);
+            throw $error;
+        }
+
+        $isEnrolled = $course->students()->where('user_id', $user->id)->exists();
+
+        if($isEnrolled){
+            $error = ValidationException::withMessages([
+                'system_error' => ['User sudah terdaftar di kelas ini'],
+            ]);
+            throw $error;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            $course->students()->attach($user->id);
+            DB::commit();
+            return redirect()->route('dashboard.courses.course_students.create', $course->id)->with('success', 'Student added successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Student failed to add');
+        }
     }
 
     /**

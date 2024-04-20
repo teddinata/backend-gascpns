@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Course;
 use App\Models\CourseQuestion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class CourseQuestionController extends Controller
 {
@@ -18,17 +21,47 @@ class CourseQuestionController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Course $course)
     {
-        //
+        $students = $course->students()->orderBy('id', 'desc')->get();
+        return view('admin.questions.create', compact('course', 'students'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Course $course)
     {
-        //
+        // dd($request->all());
+        // $validated = $request->validate([
+        //     'question' => 'required|string',
+        //     'answers'  => 'required|array',
+        //     'answers.*' => 'required|string',
+        //     'score.*'    => 'required|integer',
+        // ]);
+
+        DB::beginTransaction();
+
+        try {
+            $question = $course->questions()->create([
+                'question' => $request->question,
+                'score'    => $request->score,
+            ]);
+
+            foreach ($request->answers as $index => $answerText) {
+                $score = $request->score[$index];
+                $question->answers()->create([
+                    'answer' => $answerText,
+                    'score'  => $score,
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('dashboard.courses.show', $course->id)->with('success', 'Pertanyaan dan jawaban berhasil dibuat');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Pertanyaan dan jawaban gagal dibuat');
+        }
     }
 
     /**
@@ -44,7 +77,10 @@ class CourseQuestionController extends Controller
      */
     public function edit(CourseQuestion $courseQuestion)
     {
-        //
+        // get the course
+        $course = $courseQuestion->course;
+        $students = $course->students()->orderBy('id', 'desc')->get();
+        return view('admin.questions.edit', compact('course', 'students', 'courseQuestion'));
     }
 
     /**
@@ -52,7 +88,31 @@ class CourseQuestionController extends Controller
      */
     public function update(Request $request, CourseQuestion $courseQuestion)
     {
-        //
+        // update the course
+        DB::beginTransaction();
+
+        try {
+            $courseQuestion->update([
+                'question' => $request->question,
+                'score'    => $request->score,
+            ]);
+
+            $courseQuestion->answers()->delete();
+
+            foreach ($request->answers as $index => $answerText) {
+                $score = $request->score[$index];
+                $courseQuestion->answers()->create([
+                    'answer' => $answerText,
+                    'score'  => $score,
+                ]);
+            }
+
+            DB::commit();
+            return redirect()->route('dashboard.courses.show', $courseQuestion->course_id)->with('success', 'Pertanyaan dan jawaban berhasil diupdate');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Pertanyaan dan jawaban gagal diupdate');
+        }
     }
 
     /**
@@ -60,6 +120,15 @@ class CourseQuestionController extends Controller
      */
     public function destroy(CourseQuestion $courseQuestion)
     {
-        //
+        DB::beginTransaction();
+
+        try {
+            $courseQuestion->delete();
+            DB::commit();
+            return redirect()->route('dashboard.courses.show', $courseQuestion->course_id)->with('success', 'Question deleted successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Question failed to delete');
+        }
     }
 }

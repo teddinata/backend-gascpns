@@ -28,11 +28,11 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/course/question/create/{course}', [CourseQuestionController::class, 'create'])
         ->middleware('role:teacher')
-        ->name('courses.create.question');
+        ->name('course.create.question');
 
         Route::post('/course/question/save/{course}', [CourseQuestionController::class, 'store'])
         ->middleware('role:teacher')
-        ->name('courses.store.question');
+        ->name('course.question.store');
 
         Route::resource('course_questions', CourseQuestionController::class)->middleware('role:teacher');
 
