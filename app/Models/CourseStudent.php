@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CourseStudent extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $guarded = [
         'id'
@@ -16,11 +16,11 @@ class CourseStudent extends Model
 
     protected $fillable = [
         'course_id',
-        'student_id',
+        'user_id',
     ];
 
     public function courses()
     {
-        return $this->belongsToMany(Course::class, 'course_id');
+        return $this->belongsToMany(Course::class, 'course_students', 'user_id', 'course_id');
     }
 }

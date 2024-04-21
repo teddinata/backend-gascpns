@@ -38,7 +38,8 @@
                     <img src="{{ asset('images/icons/search.svg') }}" alt="icon">
                 </button>
             </form>
-            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add New Course</a>
+            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full
+                font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add New Course</a>
         </div>
     </div>
 </div>
@@ -110,7 +111,7 @@
                     <a href="{{ route('dashboard.courses.show', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Manage
                     </a>
-                    <a href="course-students.html" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.courses.course_students.index', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Students
                     </a>
                     <a href="{{ route('dashboard.courses.edit', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">

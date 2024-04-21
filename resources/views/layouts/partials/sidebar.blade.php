@@ -80,23 +80,26 @@
                 </a>
             </li>
             <li>
-                <a href="signin.html" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
-                    <div>
-                        <img src="{{ asset ('images/icons/security-safe.svg') }}" alt="icon">
-                    </div>
-                    <p class="font-semibold transition-all duration-300 hover:text-white">Logout</p>
-                </a>
+                <form method="post" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="w-full p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
+                        <div>
+                            <img src="{{ asset ('images/icons/security-safe.svg') }}" alt="icon">
+                        </div>
+                        <p class="font-semibold transition-all duration-300 hover:text-white">Logout</p>
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
     <a href="">
-        <div class="w-full flex gap-3 items-center p-4 rounded-[14px] bg-[#0A090B] mt-[30px]">
+        <div class="w-full flex gap-6 items-center p-4 rounded-[14px] bg-[#0A090B] mt-[30px]">
             <div>
-                <img src="{{ asset ('images/icons/crown-round-bg.svg') }}" alt="icon">
+                <img src="{{ asset ('images/logo/favicon.png') }}" alt="icon" class="w-14 h-14">
             </div>
             <div class="flex flex-col gap-[2px]">
-                <p class="font-semibold text-white">Get Pro</p>
-                <p class="text-sm leading-[21px] text-[#A0A0A0]">Unlock features</p>
+                <p class="font-semibold text-white text-base">Copyright &copy; 2024</p>
+                <p class="text-sm leading-[21px] text-[#A0A0A0]">All rights reserved</p>
             </div>
         </div>
     </a>

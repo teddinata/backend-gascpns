@@ -56,11 +56,17 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:student')
         ->name('learning.rapport.course');
 
-        Route::resource('learning', LearningController::class)->middleware('role:student');
+        Route::get('/learning/{course}/{question}', [LearningController::class, 'learning'])
+        ->middleware('role:student')
+        ->name('learning.course');
 
-        Route::get('/learning/{course}/{question}', [StudentAnswerController::class, 'store'])
+        Route::post('/learning/{course}/{question}', [StudentAnswerController::class, 'store'])
         ->middleware('role:student')
         ->name('learning.course.answer.store');
+
+        Route::resource('learning', LearningController::class)->middleware('role:student');
+
+
 
         Route::get('/settings', function () {
             return view('dashboard.settings');

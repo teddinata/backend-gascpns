@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CourseStudent;
 use App\Models\Course;
+use App\Models\StudentAnswer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -16,9 +17,36 @@ class CourseStudentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Course $course)
     {
-        //
+        // student list
+        $students = $course->students()->orderBy('id', 'desc')->get();
+        $questions = $course->questions()->orderBy('id', 'desc')->get();
+        $totalQuestions = $questions->count();
+
+        foreach ($students as $student) {
+            $studentAnswers = StudentAnswer::where('user_id', $student->user_id)
+                ->whereHas('question', function ($query) use ($course) {
+                    $query->where('course_id', $course->id);
+                })->get();
+
+            $answerCount = $studentAnswers->count();
+            $correctAnswerCount = $studentAnswers->where('answer', 5)->count();
+
+            if ($answerCount == 0) {
+                $student->status = 'Not Started';
+            } elseif ($answerCount < $totalQuestions) {
+                $student->status = 'In Progress';
+            } elseif ($answerCount == $totalQuestions && $correctAnswerCount < $totalQuestions) {
+                $student->status = 'Not Passed';
+            } elseif ($answerCount == $totalQuestions && $correctAnswerCount == $totalQuestions) {
+                $student->status = 'Passed';
+            }
+        }
+
+        // dd($students);
+
+        return view('admin.students.index', compact('students', 'course'));
     }
 
     /**
@@ -36,18 +64,21 @@ class CourseStudentController extends Controller
     public function store(Request $request, Course $course)
     {
         // add students to course
-        $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ]);
+
 
         $user = User::where('email', $request->email)->first();
 
+        // check apakah email ditemukan di dalam sistem
         if(!$user){
             $error = ValidationException::withMessages([
-                'system_error' => ['Email tidak ditemukan'],
+                'email' => ['Email tidak ditemukan di dalam sistem'],
             ]);
             throw $error;
         }
+
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
 
         $isEnrolled = $course->students()->where('user_id', $user->id)->exists();
 
@@ -66,7 +97,9 @@ class CourseStudentController extends Controller
             return redirect()->route('dashboard.courses.course_students.create', $course->id)->with('success', 'Student added successfully');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Student failed to add');
+            $error = ValidationException::withMessages([
+                'system_error' => $e->getMessage(),
+            ]);
         }
     }
 

@@ -16,19 +16,22 @@
 </div>
 <div class="header ml-[70px] pr-[70px] w-[940px] flex items-center justify-between mt-10">
     <div class="flex gap-6 items-center">
-        <div class="w-[150px] h-[150px] flex shrink-0 relative overflow">
+        <div class="w-[150px] h-[150px] flex shrink-0 relative overflow-hidden">
             <img src="{{ Storage::url($course->cover) }}" class="w-full h-full object-contain"
                 alt="icon">
-                @if ($course->category->name == 'TIU')
-                <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]
-                    absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-                @elseif ($course->category->name == 'TWK')
-                <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
-                    absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-                @elseif ($course->category->name == 'TKP')
-                <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]
-                    absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-                @endif
+            @if ($course->category->name == 'TIU')
+            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]
+                absolute bottom-0 transform text-pretty"
+                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
+            @elseif ($course->category->name == 'TWK')
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
+                absolute bottom-0 transform text-pretty mt-4"
+                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
+            @elseif ($course->category->name == 'TKP')
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]
+                absolute bottom-0 transform text-pretty"
+                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
+            @endif
         </div>
         <div class="flex flex-col gap-5">
             <h1 class="font-extrabold text-[30px] leading-[45px]">{{ $course->name }}</h1>

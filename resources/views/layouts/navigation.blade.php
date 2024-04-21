@@ -16,9 +16,17 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    @role('teacher')
                     <x-nav-link :href="route('dashboard.courses.index')" :active="request()->routeIs('dashboard.courses.index')">
                         {{ __('Manage Course') }}
                     </x-nav-link>
+                    @endrole
+
+                    @role('student')
+                    <x-nav-link :href="route('dashboard.learning.index')" :active="request()->routeIs('dashboard.learning.index')">
+                        {{ __('My Tryout') }}
+                    </x-nav-link>
+                    @endrole
                 </div>
             </div>
 
