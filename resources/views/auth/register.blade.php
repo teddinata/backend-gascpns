@@ -96,12 +96,12 @@
                         <span class="text-red-500">{{ $message }}</span>
                         @enderror
                         </div>
-                    <button type="submit" class="w-full h-[52px] p-[14px_30px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Sign Up to my Account</a>
+                    <button type="submit" class="w-full h-[52px] p-[14px_30px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Sign Up to my Account</a>
                 </div>
             </form>
             </div>
         </div>
-        <div class="right-side min-h-screen flex flex-col w-[650px] shrink-0 pb-[30px] pt-[82px] bg-[#6436F1]">
+        <div class="right-side min-h-screen flex flex-col w-[650px] shrink-0 pb-[30px] pt-[82px] bg-[#2B82FE]">
             <div class="h-full w-full flex flex-col items-center justify-center pt-[66px] gap-[100px]">
                 <div class="w-[500px] h-[360px] flex shrink-0 overflow-hidden">
                     <img src="{{asset('images/thumbnail/login-illustration-4x.png') }}" class="w-full h-full object-contain"

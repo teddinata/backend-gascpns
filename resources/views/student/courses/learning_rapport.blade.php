@@ -25,7 +25,7 @@
                 absolute bottom-0 transform text-pretty"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
                 absolute bottom-0 transform text-pretty mt-4"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TKP')
@@ -89,7 +89,7 @@
 </div>
 <div class="options flex items-center mx-[70px] gap-5 mt-[30px]">
     <a href="" class="w-fit h-[52px] p-[14px_20px] bg-[#0A090B] rounded-full font-semibold text-white transition-all duration-300 text-center">Request Retake</a>
-    <a href="" class="w-fit h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Contact Teacher</a>
+    <a href="" class="w-fit h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Contact Teacher</a>
 </div>
 @endsection
 

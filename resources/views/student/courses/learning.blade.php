@@ -51,8 +51,8 @@
             @endforeach
 
         </div>
-        <button type="submit" class="w-fit p-[14px_40px] bg-[#6436F1] rounded-full font-bold text-sm text-white
-            transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center align-middle">Save & Next Question</a>
+        <button type="submit" class="w-fit p-[14px_40px] bg-[#2B82FE] rounded-full font-bold text-sm text-white
+            transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center align-middle">Save & Next Question</a>
     </form>
 </section>
 @endsection

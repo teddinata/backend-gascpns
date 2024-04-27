@@ -75,18 +75,18 @@
         </div>
         @elseif ($course->category->name == 'TWK')
         <div class="flex shrink-0 w-[170px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]">{{ $course->category->name }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]">{{ $course->category->name }}</p>
         </div>
         @endif
         <div class="flex shrink-0 w-[120px] items-center">
             @if($course->nextQuestionId !== null)
             <a href="{{ route('dashboard.learning.course', ['course' => $course->id, 'question' => $course->nextQuestionId]) }}"
-                class="w-full h-[41px] p-[10px_20px] bg-[#6436F1] rounded-full font-bold text-sm text-white
-                transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Start Test</a>
+                class="w-full h-[41px] p-[10px_20px] bg-[#2B82FE] rounded-full font-bold text-sm text-white
+                transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Start Test</a>
             @else
             <a href="{{ route('dashboard.learning.rapport.course', ['course' => $course->id, 'question' => $course->nextQuestionId]) }}"
                 class="w-full h-[41px] p-[10px_20px] bg-indigo-950 rounded-full font-bold text-sm text-white
-                transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Raport</a>
+                transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Raport</a>
             @endif
         </div>
     </div>

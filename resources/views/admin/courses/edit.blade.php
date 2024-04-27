@@ -212,7 +212,7 @@
     </label>
     <div class="flex items-center gap-5">
         <a href="{{ route('dashboard.courses.index') }}" class="w-full h-[52px] p-[14px_20px] bg-[#0A090B] rounded-full font-semibold text-white transition-all duration-300 text-center">Cancel</a>
-        <button type="submit" id="saveCourseBtn" class="w-full h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center" disabled>Save Course</button>
+        <button type="submit" id="saveCourseBtn" class="w-full h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center" disabled>Save Course</button>
     </div>
 </form>
 @endsection

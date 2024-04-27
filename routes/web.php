@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseStudentController;
 use App\Http\Controllers\LearningController;
 use App\Http\Controllers\StudentAnswerController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\MentorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('learning', LearningController::class)->middleware('role:student');
 
         Route::resource('students', StudentController::class)->middleware('role:teacher');
+        Route::resource('mentor', MentorController::class)->middleware('role:teacher');
 
         Route::get('/settings', function () {
             return view('dashboard.settings');

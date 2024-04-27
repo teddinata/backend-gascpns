@@ -24,7 +24,7 @@
                 absolute bottom-0 transform text-pretty"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
                 absolute bottom-0 transform text-pretty mt-4"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TKP')
@@ -52,7 +52,7 @@
         </div>
     </div>
     <div class="relative">
-        <a href="{{ route('dashboard.courses.course_students.create', $course) }}" class="h-[52px] p-[14px_30px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add Student</a>
+        <a href="{{ route('dashboard.courses.course_students.create', $course) }}" class="h-[52px] p-[14px_30px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D]">Add Student</a>
     </div>
 </div>
 <div id="course-test" class="mx-[70px] w-[870px] mt-[30px]">
@@ -89,7 +89,10 @@
             @endif
         </div>
         @empty
-        <p class="text-[#7F8190]">No students found</p>
+        <div class="flex flex-col items-center justify-center w-full h-[300px] border border-[#EEEEEE] rounded-[14px]">
+            <img src="{{ asset('images/icons/empty-folder.svg') }}" alt="empty-state" class="mb-5" style="width: 250px">
+            <p class="font-bold text-[#7F8190]">No Students Found</p>
+        </div>
         @endforelse
 
     </div>

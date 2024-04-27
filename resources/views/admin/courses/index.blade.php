@@ -38,8 +38,8 @@
                     <img src="{{ asset('images/icons/search.svg') }}" alt="icon">
                 </button>
             </form>
-            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full
-                font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D]">Add New Course</a>
+            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full
+                font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D]">Add New Course</a>
         </div>
     </div>
 </div>
@@ -88,7 +88,7 @@
         </div>
         @elseif ($soal->category->name == 'TWK')
         <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]">{{ $soal->category->name }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]">{{ $soal->category->name }}</p>
         </div>
         @endif
 
@@ -132,9 +132,9 @@
         </div>
     </div>
     @empty
-    <div class="flex flex-col items-center justify-center w-full h-[200px] border border-[#EEEEEE] rounded-[14px]">
-        <img src="{{ asset('images/illustration/empty-state-course.svg') }}" alt="empty-state" class="mb-5">
-        <p class="font-bold text-[#7F8190]">No Course Found</p>
+    <div class="flex flex-col items-center justify-center w-full h-[300px] border border-[#EEEEEE] rounded-[14px]">
+        <img src="{{ asset('images/icons/empty-folder.svg') }}" alt="empty-state" class="mb-5" style="width: 250px">
+        <p class="font-bold text-[#7F8190]">No Courses Found</p>
     </div>
     @endforelse
 </div>

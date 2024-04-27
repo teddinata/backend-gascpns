@@ -36,7 +36,7 @@
             <h1 class="font-bold text-2xl">Congratulations! <br>You Have Finished Test</h1>
             <p class="text-[#7F8190] w-[374px]">Hopefully you will get a better result to prepare your great future career soon enough</p>
         </div>
-        <a href="{{ route('dashboard.learning.rapport.course', $course) }}" class="w-fit p-[14px_30px] bg-[#6436F1] rounded-full font-bold text-sm text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#6436F14D] text-center align-middle">View Test Result</a>
+        <a href="{{ route('dashboard.learning.rapport.course', $course) }}" class="w-fit p-[14px_30px] bg-[#2B82FE] rounded-full font-bold text-sm text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center align-middle">View Test Result</a>
     </div>
 </section>
 @endsection

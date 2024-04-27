@@ -24,7 +24,7 @@
             <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]
                 absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
                 absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TKP')
             <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]
@@ -141,8 +141,8 @@
         @endfor
     </div>
     <button type="submit"
-    class="w-[500px] h-[52px] p-[14px_20px] bg-[#6436F1] rounded-full font-bold text-white transition-all duration-300
-    hover:shadow-[0_4px_15px_0_#6436F14D] text-center">Save Question</button>
+    class="w-[500px] h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300
+    hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Save Question</button>
 </form>
 @endsection
 

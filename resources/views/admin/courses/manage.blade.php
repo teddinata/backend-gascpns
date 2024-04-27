@@ -24,7 +24,7 @@
                 absolute bottom-0 transform text-pretty"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#6436F1]
+            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
                 absolute bottom-0 transform text-pretty mt-4"
                 style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
             @elseif ($course->category->name == 'TKP')

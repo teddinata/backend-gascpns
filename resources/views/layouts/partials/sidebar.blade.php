@@ -19,11 +19,12 @@
             @role('teacher')
             <li>
                 <a href="{{ route('dashboard.courses.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
-                    {{ request()->routeIs('dashboard.courses.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#2B82FE]' }}
+                    {{ request()->routeIs('dashboard.courses.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
                     transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
                         {{-- <img src="{{ asset('images/icons/note-favorite.svg') }}" alt="icon"> --}}
-                        <img src="{{ asset ('images/icons/3dcube.svg') }}" alt="icon">
+                        {{-- <img src="{{ asset ('images/icons/3dcube.svg') }}" alt="icon"> --}}
+                        <i class="fa-regular fa-folder-open"></i>
                     </div>
                     <p class="font-semibold transition-all duration-300
                         {{ request()->routeIs('dashboard.courses.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
@@ -34,14 +35,30 @@
 
             <li>
                 <a href="{{ route('dashboard.students.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
-                    {{ request()->routeIs('dashboard.students.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#2B82FE]' }}
+                    {{ request()->routeIs('dashboard.students.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
                     transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
-                        <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
+                        {{-- <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-users"></i>
                     </div>
                     <p class="font-semibold transition-all duration-300
                         {{ request()->routeIs('dashboard.students.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
                         Students
+                    </p>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('dashboard.mentor.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.mentor.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-user-gear"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.mentor.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Mentor
                     </p>
                 </a>
             </li>
