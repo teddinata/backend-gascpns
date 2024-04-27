@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'Alert' => RealRashid\SweetAlert\Facades\Alert::class,
+            // login attempt
+            'login_attempt' => \App\Http\Middleware\LoginAttemptMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

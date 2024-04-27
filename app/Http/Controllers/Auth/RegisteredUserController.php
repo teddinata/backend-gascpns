@@ -48,6 +48,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // last_login
+        $user->last_login = now();
+
         return redirect(route('dashboard', absolute: false));
     }
 }

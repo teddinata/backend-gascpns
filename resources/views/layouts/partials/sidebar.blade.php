@@ -15,22 +15,54 @@
                     <p class="font-semibold transition-all duration-300 hover:text-white">Overview</p>
                 </a>
             </li>
+
+            @role('teacher')
             <li>
-                <a href="" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 bg-[#2B82FE] transition-all duration-300 hover:bg-[#2B82FE]">
+                <a href="{{ route('dashboard.courses.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.courses.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#2B82FE]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
-                        <img src="{{ asset ('images/icons/note-favorite.svg') }}" alt="icon">
+                        {{-- <img src="{{ asset('images/icons/note-favorite.svg') }}" alt="icon"> --}}
+                        <img src="{{ asset ('images/icons/3dcube.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold text-white transition-all duration-300 hover:text-white">Courses</p>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.courses.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Courses
+                    </p>
                 </a>
             </li>
+
             <li>
-                <a href="" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
+                <a href="{{ route('dashboard.students.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.students.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#2B82FE]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
-                        <img src="{{ asset ('images/icons/profile-2user.svg') }}" alt="icon">
+                        <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold transition-all duration-300 hover:text-white">Students</p>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.students.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Students
+                    </p>
                 </a>
             </li>
+            @endrole
+
+            @role('student')
+            <li>
+                <a href="{{ route('dashboard.learning.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.learning.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#2B82FE]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        <img src="{{ asset('images/icons/3dcube.svg') }}" alt="icon">
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.learning.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        My Tryout
+                    </p>
+                </a>
+            </li>
+            @endrole
+
             <li>
                 <a href="" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>

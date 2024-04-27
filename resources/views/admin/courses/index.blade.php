@@ -4,7 +4,7 @@
 @section('content')
 
 @if ($errors->any())
-<div class="flex flex-col gap-5 px-[70px] mt-[30px]">
+<div class="flex flex-col gap-5 px-5 mt-5">
     <div class="flex items center gap-2 bg-[#FEE2E2] p-4 w-[500px] rounded-[10px]">
         <img src="{{ asset('images/icons/closed.png') }}" alt="icon" class="w-6 h-6">
         <p class="font-medium text-red-500">{{ $errors->first() }}</p>
@@ -13,7 +13,7 @@
 @endif
 
 @if (session('success'))
-<div class="flex flex-col gap-5 px-[70px] mt-[30px]">
+<div class="flex flex-col gap-5 px-5 mt-5">
     <div class="flex items center gap-2 bg-[#D5EFFE] p-4 w-[500px] rounded-[10px]">
         <img src="{{ asset('images/icons/shield-check.png') }}" alt="icon" class="w-6 h-6">
         <p class="font-medium text-green-500">{{ session('success') }}</p>
@@ -117,15 +117,16 @@
                     <a href="{{ route('dashboard.courses.edit', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Edit Course
                     </a>
-                    {{-- <form action="{{ route('dashboard.courses.destroy', $soal->id) }}" method="POST">
+                    <form action="{{ route('dashboard.courses.destroy', $soal->id) }}" method="POST" id="deleteForm">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" data-confirm-delete="true" class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]">
-                            Delete
+                        <button type="button" class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
+                            onclick="confirmDelete(event, {{ $soal->id }})">
+                            Hapus
                         </button>
-                    </form> --}}
-                    <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
-                        data-confirm-delete="true">Delete</a>
+                    </form>
+                    {{-- <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
+                        data-confirm-delete="true">Delete</a> --}}
                 </div>
             </div>
         </div>
@@ -172,6 +173,24 @@
 
 @push('scripts')
 <script>
+    function confirmDelete(event, id) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Anda tidak akan dapat mengembalikan data ini!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus data!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteForm').action = "{{ route('dashboard.courses.index') }}" + '/' + id;
+                document.getElementById('deleteForm').submit();
+            }
+        })
+    }
+
     function toggleMaxHeight(button) {
         const menuDropdown = button.parentElement;
         menuDropdown.classList.toggle('max-h-fit');

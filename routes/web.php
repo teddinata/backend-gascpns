@@ -6,13 +6,14 @@ use App\Http\Controllers\CourseQuestionController;
 use App\Http\Controllers\CourseStudentController;
 use App\Http\Controllers\LearningController;
 use App\Http\Controllers\StudentAnswerController;
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard-main', function () {
+Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
@@ -66,7 +67,7 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('learning', LearningController::class)->middleware('role:student');
 
-
+        Route::resource('students', StudentController::class)->middleware('role:teacher');
 
         Route::get('/settings', function () {
             return view('dashboard.settings');
