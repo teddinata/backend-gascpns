@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'List Course')
+@section('title', 'Daftar Paket Soal')
 
 @section('content')
 
@@ -38,7 +38,7 @@
                     <img src="{{ asset('images/icons/search.svg') }}" alt="icon">
                 </button>
             </form>
-            <a href="{{ route('dashboard.courses.create') }}" class="h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full
+            <a href="{{ route('dashboard.packages.create') }}" class="h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full
                 font-bold text-white transition-all duration-300 hover:shadow-[0_4px_15px_0_#2B82FE4D]">Add New Course</a>
         </div>
     </div>
@@ -51,10 +51,15 @@
         <div class="flex justify-center shrink-0 w-[150px]">
             <p class="text-[#7F8190]">Date Created</p>
         </div>
-        <div class="flex justify-center shrink-0 w-[350px]">
-            <p class="text-[#7F8190]">Category</p>
+        <div class="flex justify-center shrink-0 w-[250px]">
+            <p class="text-[#7F8190]">Price</p>
         </div>
-        {{-- status --}}
+        <div class="flex justify-center shrink-0 w-[250px]">
+            <p class="text-[#7F8190]">Discount Price</p>
+        </div>
+        <div class="flex justify-center shrink-0 w-[250px]">
+            <p class="text-[#7F8190]">Sale Start Date</p>
+        </div>
         <div class="flex justify-center shrink-0 w-[120px]">
             <p class="text-[#7F8190]">Status</p>
         </div>
@@ -62,42 +67,64 @@
             <p class="text-[#7F8190]">Action</p>
         </div>
     </div>
-    @forelse ($courses as $soal)
+    @forelse ($packages as $package)
     <div class="list-items flex flex-nowrap justify-between pr-10">
         <div class="flex shrink-0 w-[300px]">
             <div class="flex items-center gap-4">
                 <div class="w-16 h-16 flex shrink-0 overflow-hidden rounded-full">
-                    <img src="{{ Storage::url($soal->cover) }}" class="object-cover" alt="thumbnail">
+                    <img src="{{ Storage::url($package->cover_path) }}" class="object-cover" alt="thumbnail">
                 </div>
                 <div class="flex flex-col gap-[2px]">
-                    <p class="font-bold text-lg">{{ $soal->name }}</p>
+                    <p class="font-bold text-lg">{{ $package->name }}</p>
                     <p class="text-[#7F8190]">Beginners</p>
                 </div>
             </div>
         </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
-            <p class="font-semibold">{{ $soal->created_at->format('d M Y H:i') }}</p>
+            <p class="font-semibold">{{ $package->created_at->format('d M Y H:i') }}</p>
         </div>
-        @if ($soal->category->name == 'TIU')
-        <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->category->name }}</p>
-        </div>
-        @elseif ($soal->category->name == 'TKP')
-        <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $soal->category->name }}</p>
-        </div>
-        @elseif ($soal->category->name == 'TWK')
-        <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]">{{ $soal->category->name }}</p>
-        </div>
-        @endif
 
-        {{-- badge status --}}
+        <div class="flex shrink-0 w-[250px] items-center justify-center">
+            @php
+            $price = $package->price;
+            $color = '';
+            if ($price > 100000) {
+                $color = 'text-blue-500';
+            } elseif ($price >= 50000 && $price <= 100000) {
+                $color = 'text-orange-500';
+            } else {
+                $color = 'text-red-500';
+            }
+            @endphp
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm {{ $color }}">{{ 'Rp ' . number_format($price, 0, ',', '.') }}</p>
+        </div>
+
+        <div class="flex shrink-0 w-[250px] items-center justify-center">
+            @php
+            $discount = $package->discount;
+            $color = '';
+            if ($discount > 100000) {
+                $color = 'text-blue-500';
+            } elseif ($discount >= 50000 && $discount <= 100000) {
+                $color = 'text-orange-500';
+            } else {
+                $color = 'text-red-500';
+            }
+            @endphp
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm {{ $color }}">{{ 'Rp ' . number_format($discount, 0, ',', '.') }}</p>
+        </div>
+
+        <div class="flex shrink-0 w-[250px] items-center justify-center">
+            <p class="p-[8px_16px] rounded-full bg-green-800 font-bold text-sm text-white">
+                {{ $package->sale_start_at ? \Carbon\Carbon::parse($package->sale_start_at)->format('d M Y H:i') : '-' }}
+            </p>
+        </div>
+
         <div class="flex shrink-0 w-[120px] items-center justify-center">
-            @if ($soal->status == 1)
-            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $soal->status == 1 ? 'Published' : 'Draft' }}</p>
+            @if ($package->status == 1)
+            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]">{{ $package->status == 1 ? 'Published' : 'Draft' }}</p>
             @else
-            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $soal->status == 1 ? 'Published' : 'Draft' }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $package->status == 1 ? 'Published' : 'Draft' }}</p>
             @endif
         </div>
 
@@ -108,24 +135,24 @@
                         menu
                         <img src="{{ asset('images/icons/arrow-down.svg') }}" alt="icon">
                     </button>
-                    <a href="{{ route('dashboard.courses.show', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.packages.show', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Manage
                     </a>
-                    <a href="{{ route('dashboard.courses.course_students.index', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.packages.index', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Students
                     </a>
-                    <a href="{{ route('dashboard.courses.edit', $soal) }}" class="flex items-center justify-between font-bold text-sm w-full">
-                        Edit Course
+                    <a href="{{ route('dashboard.packages.edit', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
+                        Edit Paket
                     </a>
-                    <form action="{{ route('dashboard.courses.destroy', $soal->id) }}" method="POST" id="deleteForm">
+                    <form action="{{ route('dashboard.packages.destroy', $package->id) }}" method="POST" id="deleteForm">
                         @csrf
                         @method('DELETE')
                         <button type="button" class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
-                            onclick="confirmDelete(event, {{ $soal->id }})">
+                            onclick="confirmDelete(event, {{ $package->id }})">
                             Hapus
                         </button>
                     </form>
-                    {{-- <a href="{{ route('dashboard.courses.destroy', $soal) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
+                    {{-- <a href="{{ route('dashboard.courses.destroy', $package) }}"  class="flex items-center justify-between font-bold text-sm w-full text-[#FD445E]"
                         data-confirm-delete="true">Delete</a> --}}
                 </div>
             </div>
@@ -134,7 +161,7 @@
     @empty
     <div class="flex flex-col items-center justify-center w-full h-[300px] border border-[#EEEEEE] rounded-[14px]">
         <img src="{{ asset('images/icons/empty-folder.svg') }}" alt="empty-state" class="mb-5" style="width: 250px">
-        <p class="font-bold text-[#7F8190]">No Courses Found</p>
+        <p class="font-bold text-[#7F8190]">No Packages Found</p>
     </div>
     @endforelse
 </div>
@@ -149,21 +176,21 @@
 {{-- show data 5 of 10 example --}}
 
 <div class="flex text-[#7F8190] gap-4 items-center mt-[37px] px-5">
-    Show data {{ $courses->firstItem() }} to {{ $courses->lastItem() }} of {{ $courses->total() }} total data
+    Show data {{ $packages->firstItem() }} to {{ $packages->lastItem() }} of {{ $packages->total() }} total data
 </div>
 <div id="pagination" class="flex gap-4 items-center mt-[30px] px-5">
-    @if ($courses->onFirstPage())
+    @if ($packages->onFirstPage())
         <button class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold text-[#7F8190]"><<</button>
     @else
-        <a href="{{ $courses->previousPageUrl() }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]"><<</a>
+        <a href="{{ $packages->previousPageUrl() }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]"><<</a>
     @endif
 
-    @for ($i = 1; $i <= $courses->lastPage(); $i++)
-        <a href="{{ $courses->url($i) }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190] {{ $courses->currentPage() == $i ? 'bg-[#0A090B] text-white' : '' }}">{{ $i }}</a>
+    @for ($i = 1; $i <= $packages->lastPage(); $i++)
+        <a href="{{ $packages->url($i) }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190] {{ $packages->currentPage() == $i ? 'bg-[#0A090B] text-white' : '' }}">{{ $i }}</a>
     @endfor
 
-    @if ($courses->hasMorePages())
-        <a href="{{ $courses->nextPageUrl() }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]">>></a>
+    @if ($packages->hasMorePages())
+        <a href="{{ $packages->nextPageUrl() }}" class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold transition-all duration-300 hover:text-white hover:bg-[#0A090B] text-[#7F8190]">>></a>
     @else
         <button class="flex items-center justify-center border border-[#EEEEEE] rounded-full w-10 h-10 font-semibold text-[#7F8190]">>></button>
     @endif

@@ -104,7 +104,7 @@
         <div class="right-side min-h-screen flex flex-col w-[650px] shrink-0 pb-[30px] pt-[82px] bg-[#2B82FE]">
             <div class="h-full w-full flex flex-col items-center justify-center pt-[66px] gap-[100px]">
                 <div class="w-[500px] h-[360px] flex shrink-0 overflow-hidden">
-                    <img src="{{asset('images/thumbnail/login-illustration-4x.png') }}" class="w-full h-full object-contain"
+                    <img src="{{asset('images/thumbnail/sign in illustration-2x.png') }}" class="w-full h-full object-contain"
                         alt="banner">
                 </div>
                 <div class="logos w-full overflow-hidden">

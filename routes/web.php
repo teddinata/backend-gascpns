@@ -9,13 +9,15 @@ use App\Http\Controllers\StudentAnswerController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\MentorController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PackageController;
+use App\Http\Controllers\PackageTryOutController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return view('dashboard-new');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -66,7 +68,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:student')
         ->name('learning.course.answer.store');
 
+
         Route::resource('learning', LearningController::class)->middleware('role:student');
+
+        Route::resource('packages', PackageController::class)->middleware('role:teacher');
 
         Route::resource('students', StudentController::class)->middleware('role:teacher');
         Route::resource('mentor', MentorController::class)->middleware('role:teacher');

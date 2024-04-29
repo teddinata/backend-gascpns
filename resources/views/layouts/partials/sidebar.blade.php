@@ -7,19 +7,23 @@
             <li>
                 <h3 class="font-bold text-xs text-[#A5ABB2]">DAILY USE</h3>
             </li>
-            <li>
-                <a href="" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
-                    <div>
-                        <img src="{{ asset ('images/icons/home-hashtag.svg') }}" alt="icon">
-                    </div>
-                    <p class="font-semibold transition-all duration-300 hover:text-white">Overview</p>
-                </a>
-            </li>
 
             @role('teacher')
             <li>
-                <a href="{{ route('dashboard.courses.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
-                    {{ request()->routeIs('dashboard.courses.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                <a href="{{ route('dashboard') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        <i class="fa-solid fa-earth-asia"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Dashboard
+                    </p>
+                </a>
+            <li>
+                <a href="{{ route('dashboard.packages.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.packages.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
                     transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
                         {{-- <img src="{{ asset('images/icons/note-favorite.svg') }}" alt="icon"> --}}
@@ -27,8 +31,24 @@
                         <i class="fa-regular fa-folder-open"></i>
                     </div>
                     <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.packages.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Paket Soal
+                    </p>
+                </a>
+            </li>
+
+            <li>
+                <a href="{{ route('dashboard.courses.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.courses.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/note-favorite.svg') }}" alt="icon"> --}}
+                        {{-- <img src="{{ asset ('images/icons/3dcube.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
                         {{ request()->routeIs('dashboard.courses.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
-                        Courses
+                         Soal
                     </p>
                 </a>
             </li>
@@ -43,7 +63,7 @@
                     </div>
                     <p class="font-semibold transition-all duration-300
                         {{ request()->routeIs('dashboard.students.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
-                        Students
+                        Siswa
                     </p>
                 </a>
             </li>

@@ -1,5 +1,5 @@
 @extends('layouts.master')
-@section('title', 'Daftar Siswa')
+@section('title', 'Daftar Mentor')
 
 @push('styles')
 @endpush

@@ -8,7 +8,7 @@
 
 @if ($errors->any())
 <div class="flex flex-col gap-5 px-5 mt-5">
-    <div class="flex items center gap-2 bg-[#FEE2E2] p-4 w-[500px] rounded-[10px]">
+    <div class="flex items center gap-2 bg-[#FEE2E2] p-4 w-full rounded-[10px]">
         <img src="{{ asset('images/icons/closed.png') }}" alt="icon" class="w-6 h-6">
         <p class="font-medium text-red-500">{{ $errors->first() }}</p>
     </div>
@@ -17,7 +17,7 @@
 
 @if (session('success'))
 <div class="flex flex-col gap-5 px-5 mt-5">
-    <div class="flex items center gap-2 bg-[#D5EFFE] p-4 w-[500px] rounded-[10px]">
+    <div class="flex items center gap-2 bg-[#D5EFFE] p-4 w-full rounded-[10px]">
         <img src="{{ asset('images/icons/shield-check.png') }}" alt="icon" class="w-6 h-6">
         <p class="font-medium text-green-500">{{ session('success') }}</p>
         <button onclick="this.parentElement.remove()" class="text-[#3DB475]">&times;</button>
