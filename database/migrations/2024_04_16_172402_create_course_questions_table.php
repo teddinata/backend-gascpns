@@ -15,6 +15,16 @@ return new class extends Migration
             $table->id();
             $table->string('question');
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->string('image')->nullable();
+
+            // penjelasan jawaban
+            $table->text('explanation')->nullable();
+
+            // created_by is the user who created the question
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
+
             $table->timestamps();
             $table->softDeletes();
         });

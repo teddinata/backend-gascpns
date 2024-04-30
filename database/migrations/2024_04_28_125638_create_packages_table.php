@@ -26,6 +26,10 @@ return new class extends Migration
             // voucher
             $table->string('voucher_code')->nullable();
 
+            // tanggal try out bisa mulai dikerjakan dan berakhir
+            $table->datetime('start_at')->nullable();
+            $table->datetime('end_at')->nullable();
+
             $table->string('cover_path')->nullable();
             $table->string('thumbnail_path')->nullable();
 
