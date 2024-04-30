@@ -9,46 +9,51 @@
     <div class="breadcrumb flex items-center gap-[30px]">
         <a href="{{route('dashboard')}}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Home</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
-        <a href="{{ route('dashboard.courses.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
+        <a href="{{ route('dashboard.courses.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Kelola Paket Soal</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
-        <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold ">Course Detail</a>
+        <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold ">Detail Paket</a>
     </div>
 </div>
 <div class="header ml-[70px] pr-[70px] w-[940px] flex items-center justify-between mt-10">
     <div class="flex gap-6 items-center">
         <div class="w-[150px] h-[150px] flex shrink-0 relative overflow">
-            {{-- <img src="{{ asset('images/thumbnail/Web-Development.png') }}" class="w-full h-full object-contain" alt="icon"> --}}
-            <img src="{{ Storage::url($course->cover) }}" class="w-full h-full object-contain" alt="icon">
-            @if ($course->category->name == 'TIU')
-            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]
-                absolute bottom-0 transform text-pretty"
-                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
-            @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
-                absolute bottom-0 transform text-pretty mt-4"
-                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
-            @elseif ($course->category->name == 'TKP')
-            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]
-                absolute bottom-0 transform text-pretty"
-                style="font-size: 14px; text-align: center;">{{ $course->category->full_name }}</p>
-            @endif
+            <img src="{{ Storage::url($package->cover_path) }}" class="w-full h-full object-contain" alt="icon">
         </div>
         <div class="flex flex-col gap-5">
-            <h1 class="font-extrabold text-[30px] leading-[45px]">{{ $course->name }}</h1>
+            <h1 class="font-extrabold text-[30px] leading-[45px]">{{ $package->name }}</h1>
             <div class="flex items-center gap-5">
                 <div class="flex gap-[10px] items-center">
                     <div class="w-6 h-6 flex shrink-0">
                         <img src="{{ asset('images/icons/calendar-add.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold">{{ $course->created_at->format('d M Y H:i') }}</p>
-                </div>
-                <div class="flex gap-[10px] items-center">
-                    <div class="w-6 h-6 flex shrink-0">
-                        <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
-                    </div>
-                    <p class="font-semibold">{{ count($students) }} Students</p>
+                    <p class="font-semibold">Tanggal Penjualan: {{ $package->sale_start_at ? \Carbon\Carbon::parse($package->sale_start_at)->format('d M Y H:i') : '-' }} - {{ $package->sale_end_at ? \Carbon\Carbon::parse($package->sale_end_at)->format('d M Y H:i') : '-' }}</p>
                 </div>
             </div>
+            <div class="flex items-center gap-5">
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex shrink-0">
+                        <img src="{{ asset('images/icons/note-favorite-outline.svg') }}" alt="icon">
+                    </div>
+                    <p class="font-semibold">Periode Try Out: {{ $package->sale_start_at ? \Carbon\Carbon::parse($package->sale_start_at)->format('d M Y H:i') : '-' }} - {{ $package->sale_end_at ? \Carbon\Carbon::parse($package->sale_end_at)->format('d M Y H:i') : '-' }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-5">
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex shrink-0">
+                        <img src="{{ asset('images/icons/clock.svg') }}" alt="icon">
+                    </div>
+                    <p class="font-semibold">Durasi Pengerjaan: {{ $package->total_duration }} Menit</p>
+                </div>
+
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <i class="fa-regular fa-file-lines" style="font-size: 20px;"></i>
+                    </div>
+                    <p class="font-semibold">Jumlah Soal: {{ $total_tryout_courses }} Soal</p>
+                </div>
+            </div>
+
         </div>
     </div>
     <div class="relative">
@@ -56,7 +61,7 @@
             <img src="{{ asset('images/icons/more.svg') }}" alt="icon">
         </a>
         <div class="dropdown-menu absolute hidden right-0 top-[66px] w-[270px] flex flex-col gap-4 p-5 border border-[#EEEEEE] bg-white rounded-[18px] transition-all duration-300 shadow-[0_10px_16px_0_#0A090B0D]">
-            <a href="{{ route('dashboard.courses.course_students.create', $course) }}" class="flex gap-[10px] items-center">
+            <a href="{{ route('dashboard.courses.course_students.create', $package) }}" class="flex gap-[10px] items-center">
                 <div class="w-5 h-5">
                     <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
                 </div>
@@ -109,38 +114,44 @@
 @endif
 
 <div id="course-test" class="mx-[70px] w-[870px] mt-[30px]">
-    <h2 class="font-bold text-2xl">Course Tests</h2>
+    <h2 class="font-bold text-2xl">Paket Soal</h2>
     <div class="flex flex-col gap-[30px] mt-2">
-        <a href="{{ route('dashboard.course.create.question', $course) }}" class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
+        <a href="{{ route('dashboard.package.create.tryout', $package) }}" class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B]
+            rounded-[20px]">
             <div class="flex items-center gap-5">
                 <div>
                     <img src="{{ asset('images/icons/note-add.svg') }}" alt="icon">
                 </div>
-                <p class="font-bold text-xl">New Question</p>
+                <p class="font-bold text-xl">Tambahkan Soal</p>
             </div>
         </a>
-        @forelse ($questions as $question)
+        @forelse ($package_tryout as $tryout)
         <div class="question-card w-full flex items-center justify-between p-4 border border-[#EEEEEE] rounded-[20px]">
             <div class="flex flex-col gap-[6px]">
-                <p class="text-[#7F8190]">Question</p>
-                <p class="font-bold text-xl">{{ $question->question }}</p>
+                <p class="text-[#7F8190]">Soal</p>
+                <p class="font-bold text-xl">{{ $tryout->course->name }}</p>
+                <p class="text-[#404144]">{{ count($tryout->course->questions) }} Soal</p>
             </div>
             <div class="flex items-center gap-[14px]">
-                <a href="{{ route('dashboard.course_questions.edit', $question) }}" class="bg-[#0A090B] p-[14px_30px] rounded-full text-white font-semibold">Edit</a>
-                {{-- <form action=""> --}}
-                    <a href="{{ route('dashboard.course_questions.destroy', $question) }}"
-                        class="w-[52px] h-[52px] flex shrink-0 items-center justify-center rounded-full bg-[#FD445E]"
-                        data-confirm-delete="true">
-                        <img src="{{ asset('images/icons/trash.svg') }}" alt="icon">
+                {{-- <a href="{{ route('dashboard.package_tryouts.edit', $tryout) }}" class="bg-[#0A090B] p-[14px_30px] rounded-full
+                     text-white font-semibold">Edit</a> --}}
+
+                <form action="{{ route('dashboard.package_tryouts.destroy', $tryout->id) }}" method="POST" id="deleteForm">
+                    @csrf
+                    @method('DELETE')
+                    <a href="#" class="flex items-center justify-between font-bold w-full text-[#FD445E] bg-[#FD445E]
+                        p-[14px_30px] rounded-full"
+                        onclick="confirmDelete(event, {{ $tryout->id }})">
+                        <i class="fas fa-trash text-[#ffffff]" style="font-size: 26px;"></i>
                     </a>
-                {{-- </form> --}}
+                </form>
 
             </div>
         </div>
         @empty
         <div class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
             <div class="flex items-center gap-5">
-                <p class="font-bold text-xl">Kelas ini belum memiliki soal</p>
+                <p class="font-bold text-xl">Paket Soal ini masih kosong, silahkan tambahkan soal</p>
             </div>
         </div>
         @endforelse
@@ -150,6 +161,24 @@
 
 @push('scripts')
 <script>
+    function confirmDelete(event, id) {
+        event.preventDefault();
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Anda tidak akan dapat mengembalikan data ini!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, hapus data!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('deleteForm').action = "{{ route('dashboard.package_tryouts.index') }}" + '/' + id;
+                document.getElementById('deleteForm').submit();
+            }
+        })
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const menuButton = document.getElementById('more-button');
         const dropdownMenu = document.querySelector('.dropdown-menu');

@@ -8,7 +8,7 @@
 
 <div class="flex flex-col gap-10 px-5 mt-5">
     <div class="breadcrumb flex items-center gap-[30px]">
-        <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Home</a>
+        <a href="{{route('dashboard')}}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Home</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
         <a href="{{ route('dashboard.courses.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
@@ -109,7 +109,7 @@
     <h2 class="font-bold text-2xl">Edit Question</h2>
     <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Question</p>
-        <div class="flex items-center w-[500px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
+        <div class="flex items-center w-[940px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
             <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
                 <img src="{{ asset('images/icons/note-text.svg') }}" class="h-full w-full object-contain" alt="icon">
             </div>

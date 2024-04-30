@@ -20,6 +20,25 @@ class PackageTryOut extends Model
         'deleted_by',
     ];
 
+    // fill created_by, updated_by, deleted_by
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_by = auth()->id();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_by = auth()->id();
+        });
+
+        static::deleting(function ($model) {
+            $model->deleted_by = auth()->id();
+            $model->save();
+        });
+    }
+
     public function package()
     {
         return $this->belongsTo(Package::class, 'package_id', 'id');

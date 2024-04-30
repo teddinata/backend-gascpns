@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use App\Models\PackageTryOut;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
@@ -94,9 +95,23 @@ class PackageController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PackageTryOut $packageTryOut)
+    public function show(Package $package)
     {
-        //
+        // package tryout
+        $package_tryout = PackageTryOut::where('package_id', $package->id)->get();
+
+        // hitung total tryout courses dari relasi package tryout dengan courses -> question
+        $total_tryout_courses = 0;
+        foreach ($package_tryout as $tryout) {
+            $total_tryout_courses += $tryout->course->questions->count();
+        }
+
+        $title = 'Delete Tryout dari Paket?';
+        $text = "Apakah anda yakin ingin menghapus tryout dari paket ini?";
+        confirmDelete($title, $text);
+
+        // dd($total_tryout_courses);
+        return view('admin.packages.manage-tryout', compact('package', 'package_tryout', 'total_tryout_courses'));
     }
 
     /**

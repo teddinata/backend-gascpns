@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Package;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Models\Course;
 
 
 class PackageTryOutController extends Controller
@@ -22,18 +23,48 @@ class PackageTryOutController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Package $package)
     {
-        return view('admin.packages.create');
+        // tampilkan courses yang belum ada di package
+        $courses = Course::whereNotIn('id', $package->packageTryOuts->pluck('course_id'))->get();
+
+        $package_tryout = PackageTryOut::where('package_id', $package->id)->get();
+
+        // hitung total tryout courses dari relasi package tryout dengan courses -> question
+        $total_tryout_courses = 0;
+        foreach ($package_tryout as $tryout) {
+            $total_tryout_courses += $tryout->course->questions->count();
+        }
+
+        return view('admin.tryout-packages.create', compact('package', 'courses', 'total_tryout_courses'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Package $package)
     {
         // Validate the request...
+        $validatedData = $request->validate([
+            'course_id' => 'required|exists:courses,id',
+        ]);
 
+        // Store the data...
+        DB::beginTransaction();
+        try {
+            $package->packageTryOuts()->create($validatedData);
+            DB::commit();
+
+            return redirect()->route('dashboard.packages.show', $package->id)->with('success', 'Package try out created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $error = ValidationException::withMessages([
+                'error' => [
+                    'Package try out failed to create '. $e->getMessage()
+                ]
+            ]);
+            throw $error;
+        }
     }
 
     /**
@@ -47,9 +78,19 @@ class PackageTryOutController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Package $package)
+    public function edit(PackageTryOut $package_tryout)
     {
-        return view('admin.packages.edit', compact('package'));
+        // dd($package_tryout);
+        $package = Package::findOrFail($package_tryout->package_id);
+        // Tampilkan courses yang belum ada di package
+        $courses = Course::whereNotIn('id', $package->packageTryOuts->pluck('course_id'))->get();
+
+        // Tampilkan package try out
+        // $package = PackageTryOut::with('package')->findOrFail($package_tryout->id);
+
+
+
+        return view('admin.tryout-packages.edit', compact('package_tryout', 'package', 'courses'));
     }
 
     /**
@@ -64,15 +105,15 @@ class PackageTryOutController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PackageTryOut $packageTryOut)
+    public function destroy(PackageTryOut $package_tryout)
     {
         // delete the data...
         DB::beginTransaction();
         try {
-            $packageTryOut->delete();
+            $package_tryout->delete();
             DB::commit();
 
-            return redirect()->route('dashboard.packages.index')->with('success', 'Package deleted successfully');
+            return redirect()->route('dashboard.packages.show', $package_tryout->package_id)->with('success', 'Package try out deleted successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             $error = ValidationException::withMessages([

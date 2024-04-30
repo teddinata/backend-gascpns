@@ -2,6 +2,43 @@
 @section('title', 'Create Question')
 
 @push('styles')
+<style>
+    /* Custom Select2 styling */
+    .select2-container--classic .select2-selection--single {
+        height: 52px;
+        border: 1px solid #EEEEEE;
+        border-radius: 30px;
+        background-image: url('{{ asset('images/icons/arrow-down.svg') }}');
+        background-repeat: no-repeat;
+        background-position: right center;
+        padding-right: 40px; /* Adjust the padding to accommodate the arrow */
+    }
+
+    .select2-container--classic .select2-selection--single .select2-selection__arrow b {
+        border-color: #0A090B;
+    }
+    /* Style the dropdown menu */
+    .select2-container .select2-dropdown {
+        border-radius: 10px;
+        border-top: 1px solid #0a0707;
+
+    }
+
+    .select2-container--classic .select2-selection--single .select2-selection__rendered {
+        line-height: 52px;
+        color: #0A090B;
+        padding-left: 14px;
+    }
+
+    .select2-container--classic .select2-selection--single .select2-selection__arrow {
+        top: 19px;
+    }
+
+    /* Custom border for dropdown */
+    .select2-container--classic.select2-container--open .select2-dropdown {
+        border-top: 1px solid #030303;
+    }
+</style>
 @endpush
 
 @section('content')
@@ -10,43 +47,51 @@
     <div class="breadcrumb flex items-center gap-[30px]">
         <a href="{{route('dashboard')}}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Home</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
-        <a href="{{ route('dashboard.courses.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
+        <a href="{{ route('dashboard.packages.index') }}" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Manage Courses</a>
         <span class="text-[#7F8190] last:text-[#0A090B]">/</span>
         <a href="#" class="text-[#7F8190] last:text-[#0A090B] last:font-semibold">Course Details</a>
     </div>
 </div>
-<div class="header ml-[70px] pr-[70px] w-[940px] flex items-center justify-between mt-10">
+<div class="header pr-[70px] w-[940px] flex items-center justify-between mt-10">
     <div class="flex gap-6 items-center">
         <div class="w-[150px] h-[150px] flex shrink-0 relative overflow">
-            {{-- <img src="{{ asset('images/thumbnail/Web-Development.png') }}" class="w-full h-full object-contain" alt="icon"> --}}
-            <img src="{{ Storage::url($course->cover) }}" class="w-full h-full object-contain" alt="icon">
-            @if ($course->category->name == 'TIU')
-            <p class="p-[8px_16px] rounded-full bg-[#D5EFFE] font-bold text-sm text-[#066DFE]
-                absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-            @elseif ($course->category->name == 'TWK')
-            <p class="p-[8px_16px] rounded-full bg-[#EAE8FE] font-bold text-sm text-[#2B82FE]
-                absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-            @elseif ($course->category->name == 'TKP')
-            <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]
-                absolute bottom-0 transform -translate-x-1/2 left-1/2 text-nowrap">{{ $course->category->full_name }}</p>
-            @endif
+            <img src="{{ Storage::url($package->cover_path) }}" class="w-full h-full object-contain" alt="icon">
         </div>
         <div class="flex flex-col gap-5">
-            <h1 class="font-extrabold text-[30px] leading-[45px]">{{ $course->name }}</h1>
+            <h1 class="font-extrabold text-[30px] leading-[45px]">{{ $package->name }}</h1>
             <div class="flex items-center gap-5">
                 <div class="flex gap-[10px] items-center">
                     <div class="w-6 h-6 flex shrink-0">
                         <img src="{{ asset('images/icons/calendar-add.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold">{{ $course->created_at->format('d M Y H:i') }}</p>
-                </div>
-                <div class="flex gap-[10px] items-center">
-                    <div class="w-6 h-6 flex shrink-0">
-                        <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
-                    </div>
-                    <p class="font-semibold">{{ count($students) }} Students</p>
+                    <p class="font-semibold">Tanggal Penjualan: {{ $package->sale_start_at ? \Carbon\Carbon::parse($package->sale_start_at)->format('d M Y H:i') : '-' }} - {{ $package->sale_end_at ? \Carbon\Carbon::parse($package->sale_end_at)->format('d M Y H:i') : '-' }}</p>
                 </div>
             </div>
+            <div class="flex items-center gap-5">
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex shrink-0">
+                        <img src="{{ asset('images/icons/note-favorite-outline.svg') }}" alt="icon">
+                    </div>
+                    <p class="font-semibold">Periode Try Out: {{ $package->sale_start_at ? \Carbon\Carbon::parse($package->sale_start_at)->format('d M Y H:i') : '-' }} - {{ $package->sale_end_at ? \Carbon\Carbon::parse($package->sale_end_at)->format('d M Y H:i') : '-' }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-5">
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex shrink-0">
+                        <img src="{{ asset('images/icons/clock.svg') }}" alt="icon">
+                    </div>
+                    <p class="font-semibold">Durasi Pengerjaan: {{ $package->total_duration }} Menit</p>
+                </div>
+
+                <div class="flex gap-[10px] items-center">
+                    <div class="w-6 h-6 flex items-center justify-center">
+                        <i class="fa-regular fa-file-lines" style="font-size: 20px;"></i>
+                    </div>
+                    <p class="font-semibold">Jumlah Soal: {{ $total_tryout_courses }} Soal</p>
+                </div>
+            </div>
+
         </div>
     </div>
     <div class="relative">
@@ -100,22 +145,39 @@
     </div>
 @endif
 
-<form method="POST" action="{{ route('dashboard.course.question.store', $course) }}" id="add-question" class="mx-[70px] mt-[30px] flex flex-col gap-5">
+<form method="POST" action="{{ route('dashboard.package.tryout.store', $package) }}" id="add-question" class="mx-[70px] mt-[30px] flex flex-col gap-5">
     @csrf
-    <h2 class="font-bold text-2xl">Add New Question</h2>
+    <h2 class="font-bold text-2xl">Tambah Soal</h2>
     <div class="flex flex-col gap-[10px]">
-        <p class="font-semibold">Question</p>
-        <div class="flex items-center w-[940px] h-[52px] p-[14px_16px] rounded-md border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
-            <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
-                <img src="{{ asset('images/icons/note-text.svg') }}" class="h-full w-full object-contain" alt="icon">
+        <p class="font-semibold">Soal</p>
+        <div class="peer flex items-center p-[12px_16px] rounded-full w-[700px] border border-[#EEEEEE] transition-all duration-300
+            focus-within:border-2 focus-within:border-[#0A090B]">
+            <div class="mr-[10px] w-6 h-6 flex items-center justify-center overflow-hidden">
+                <img src="{{ asset('images/icons/bill.svg') }}" class="w-full h-full object-contain" alt="icon">
             </div>
-            <input type="text" class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none"
-            placeholder="Write the question" name="question">
+            <div class="w-full relative">
+                <select id="course" class="pl-1 pr-[32px] font-semibold focus:outline-none w-full text-[#0A090B] invalid:text-[#7F8190]
+                                invalid:font-normal appearance-none bg-[url('{{ asset('images/icons/arrow-down.svg') }}')] bg-no-repeat bg-right"
+                                name="course_id" required>
+                    <option value="" disabled selected hidden>Choose one of category</option>
+                    @forelse ($courses as $course)
+                        <option value="{{ $course->id }}" class ="font-semibold">{{ $course->name }}</option>
+                    @empty
+                        <option value="" class="font-semibold">No course available</option>
+                    @endforelse
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-[10px] text-[#7F8190]">
+                    <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6.293 7.293a1 1 0 011.414 0L10 9.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414zM10 2a1 1 0 011 1v6a1 1 0 11-2 0V3a1 1 0 011-1z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 18a1 1 0 01-1-1v-6a1 1 0 112 0v6a1 1 0 01-1 1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+            </div>
         </div>
+
     </div>
-    <div class="flex flex-col gap-[10px]">
+    {{-- <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Answers</p>
-        @for($i = 0; $i < 5; $i++)
         <div class="flex items-center gap-4">
             <div class="flex items-center w-[500px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
                 <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
@@ -133,21 +195,21 @@
                     placeholder="Score (0-5)"
                     name="score[]"
                     min="0"
-                    max="5"
-                    oninput="checkValue(this, {{ $i }})"
-                    value="{{ old('score.' . $i) }}">
+                    max="5">
                 </div>
-            <span id="error{{ $i }}" style="color: red; display: none;">Error: Nilai harus diantara 1-5 dan tidak boleh sama!</span>
-        </div>
-        @endfor
-    </div>
+           </div>
+    </div> --}}
     <button type="submit"
     class="w-[500px] h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300
-    hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Save Question</button>
+    hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Save to Try Out Package</button>
 </form>
 @endsection
 
 @push('scripts')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
 <script>
      function checkValue(input, index) {
         var value = input.value;
@@ -171,4 +233,17 @@
         }
     }
 </script>
+
+<script>
+    // Inisialisasi Select2 pada elemen <select>
+    $(document).ready(function() {
+        $('#course').select2({
+            placeholder: "Choose one of category",
+            allowClear: true,
+            width: '100%',
+            theme: "custom" // Atau gunakan tema Select2 lainnya
+        });
+    });
+</script>
+
 @endpush

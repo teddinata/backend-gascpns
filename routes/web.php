@@ -11,6 +11,7 @@ use App\Http\Controllers\MentorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageTryOutController;
+use App\Models\PackageTryOut;
 
 Route::get('/', function () {
     return view('welcome');
@@ -71,7 +72,17 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('learning', LearningController::class)->middleware('role:student');
 
+        Route::get('/packages/tryout/create/{package}', [PackageTryOutController::class, 'create'])
+        ->middleware('role:teacher')
+        ->name('package.create.tryout');
+
+        Route::post('/packages/tryout/save/{package}', [PackageTryOutController::class, 'store'])
+        ->middleware('role:teacher')
+        ->name('package.tryout.store');
+
         Route::resource('packages', PackageController::class)->middleware('role:teacher');
+
+        Route::resource('package_tryouts', PackageTryOutController::class)->middleware('role:teacher');
 
         Route::resource('students', StudentController::class)->middleware('role:teacher');
         Route::resource('mentor', MentorController::class)->middleware('role:teacher');
