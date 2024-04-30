@@ -13,9 +13,17 @@ return new class extends Migration
     {
         Schema::create('course_students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('course_id')->constrained()->onDelete('cascade');
+            $table->foreignId('course_id')->constrained()->onDelete('cascade')->nullable();
+            // try out
+            $table->foreignId('package_tryout_id')->constrained('package_tryouts')->onDelete('cascade')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
+            // created_by is the user who created the question
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->foreignId('updated_by')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('deleted_by')->nullable()->constrained('users')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

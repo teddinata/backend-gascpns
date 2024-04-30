@@ -17,7 +17,29 @@ class CourseQuestion extends Model
     protected $fillable = [
         'question',
         'course_id',
+        'image',
+        'explanation',
     ];
+
+    // created by auto fill
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_by = auth()->id();
+        });
+
+        static::updating(function ($model) {
+            $model->updated_by = auth()->id();
+        });
+
+        static::deleting(function ($model) {
+            $model->deleted_by = auth()->id();
+            $model->save();
+        });
+    }
+
 
     public function course()
     {
