@@ -27,6 +27,8 @@ class Package extends Model
         'status',
         'sale_start_at',
         'sale_end_at',
+        'start_at',
+        'end_at',
         'discount',
         'voucher_code',
         'cover_path',
@@ -53,6 +55,12 @@ class Package extends Model
             $model->deleted_by = auth()->id();
             $model->save();
         });
+    }
+
+    // students
+    public function students()
+    {
+        return $this->belongsToMany(User::class, 'course_students', 'package_tryout_id', 'user_id');
     }
 
     public function packageTryOuts()

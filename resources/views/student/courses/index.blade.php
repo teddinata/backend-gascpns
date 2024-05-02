@@ -92,7 +92,7 @@
     </div>
     @empty
     <div class="flex flex-col items-center justify-center gap-5">
-        <img src="{{ asset('images/illustration/empty-course.svg') }}" alt="empty-course">
+        <img src="{{ asset('images/icons/empty-folder.svg') }}" style="width: 250px" alt="empty-course">
         <p class="font-bold text-lg text-[#7F8190]">No Course Found</p>
         <p class="text-[#7F8190] text-center">You haven't joined any course yet. Let's join and start learning!</p>
         <a href="{{ route('dashboard.courses.index') }}" class="w-[200px] h-[41px] bg-[#2B82FE] rounded-full

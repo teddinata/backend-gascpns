@@ -103,26 +103,50 @@
     </div>
 @endif
 
-<form method="POST" action="{{ route('dashboard.course_questions.update', $courseQuestion) }}" id="add-question" class="mx-[70px] mt-[30px] flex flex-col gap-5">
+<form method="POST" action="{{ route('dashboard.course_questions.update', $courseQuestion) }}"
+    id="add-question" enctype="multipart/form-data" class="mx-[70px] mt-[30px] flex flex-col gap-5">
     @csrf
     @method('PUT')
     <h2 class="font-bold text-2xl">Edit Question</h2>
+
+    <div class="flex gap-5 items-center">
+        <input type="file" name="image" id="icon" class="peer hidden" onchange="previewFile()" data-empty="true">
+        <div class="relative w-[500px] h-[250px] overflow-hidden peer-data-[empty=true]:border-[3px] peer-data-[empty=true]:border-dashed peer-data-[empty=true]:border-[#EEEEEE]">
+            <div class="relative file-preview z-10 w-full h-full">
+                <img src="{{ Storage::url($courseQuestion->image) }}" class="thumbnail-icon w-full h-full object-cover"
+                    alt="thumbnail">
+            </div>
+            <span class="absolute top-0 left-0 w-full h-full flex items-center justify-center text-center font-semibold text-sm text-[#7F8190]">
+                <i class="fa-solid fa-cloud-arrow-up mr-2" style="font-size: 20px"></i>
+                Gambar Soal <br>(Opsional)
+            </span>
+        </div>
+
+        <button type="button" class="flex shrink-0 p-[8px_20px] h-fit items-center rounded-full bg-[#0A090B] font-semibold text-white" onclick="document.getElementById('icon').click()">
+            <i class="fa-solid fa-cloud-arrow-up mr-2" style="font-size: 20px"></i>
+            <span> Tambah Gambar untuk Soal</span>
+        </button>
+    </div>
+
     <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Question</p>
-        <div class="flex items-center w-[940px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
+        {{-- <div class="flex items-center w-[940px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
             <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
                 <img src="{{ asset('images/icons/note-text.svg') }}" class="h-full w-full object-contain" alt="icon">
             </div>
             <input type="text" value="{{ $courseQuestion->question }}"
             class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none"
             placeholder="Write the question" name="question">
-        </div>
+        </div> --}}
+        <textarea name="question" id="question" class="w-[940px] h-[100px] p-[14px_16px] rounded-[10px] border border-[#EEEEEE] \
+        focus:border-2 focus:border-[#0A090B] outline-none"
+        placeholder="Write the question">{{ $courseQuestion->question }}</textarea>
     </div>
     <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Answers</p>
         @forelse ($courseQuestion->answers as $i => $answer)
         <div class="flex items-center gap-4">
-            <div class="flex items-center w-[500px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
+            <div class="flex items-center w-[940px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus-within:border-2 focus-within:border-[#0A090B]">
                 <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
                     <img src="{{ asset('images/icons/edit.svg') }}" class="h-full w-full object-contain" alt="icon">
                 </div>
@@ -148,6 +172,21 @@
         @empty
         @endforelse
     </div>
+
+    <div class="flex flex-col gap-[10px]">
+        <p class="font-semibold">Explanation</p>
+        <div class="flex items-center w-[1140px] p-[14px_16px] rounded-md border border-[#EEEEEE]">
+            <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
+                <img src="{{ asset('images/icons/note-text.svg') }}" class="h-full w-full object-contain" alt="icon">
+            </div>
+            <textarea id="explanation" name="explanation" rows="10" class="flex-1 p-2.5 text-sm text-gray-900 bg-gray-50 rounded-lg
+            border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600
+            dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500
+            focus:outline-none focus:ring focus:ring-opacity-75 focus:ring-offset-2 focus:ring-offset-gray-100"
+            placeholder="Write the explanation">{{ $courseQuestion->explanation }}</textarea>
+        </div>
+    </div>
+
     <button type="submit"
     class="w-[500px] h-[52px] p-[14px_20px] bg-[#2B82FE] rounded-full font-bold text-white transition-all duration-300
     hover:shadow-[0_4px_15px_0_#2B82FE4D] text-center">Update Question</button>
@@ -155,7 +194,63 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdn.tiny.cloud/1/cidud93cpqy1w1o737hl6g4tfjsh3xnqtfiz548zskmzga0w/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+
 <script>
+    tinymce.init({
+      selector: '#question',
+      plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage advtemplate ai mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss markdown',
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+      tinycomments_mode: 'embedded',
+      tinycomments_author: 'Author name',
+      mergetags_list: [
+        { value: 'First.Name', title: 'First Name' },
+        { value: 'Email', title: 'Email' },
+      ],
+      ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
+    });
+</script>
+
+<script>
+    tinymce.init({
+        selector: '#explanation',
+        plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount checklist mediaembed casechange export formatpainter pageembed linkchecker a11ychecker tinymcespellchecker permanentpen powerpaste advtable advcode editimage advtemplate ai mentions tinycomments tableofcontents footnotes mergetags autocorrect typography inlinecss markdown',
+        toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+        tinycomments_mode: 'embedded',
+        tinycomments_author: 'Author name',
+        mergetags_list: [
+        { value: 'First.Name', title: 'First Name' },
+        { value: 'Email', title: 'Email' },
+        ],
+        ai_request: (request, respondWith) => respondWith.string(() => Promise.reject("See docs to implement AI Assistant")),
+    });
+</script>
+
+
+<script>
+    function previewFile() {
+        var preview = document.querySelector('.file-preview');
+        var fileInput = document.querySelector('input[type=file]');
+
+        if (fileInput.files.length > 0) {
+            var reader = new FileReader();
+            var file = fileInput.files[0]; // Get the first file from the input
+
+            reader.onloadend = function () {
+                var img = preview.querySelector('.thumbnail-icon'); // Get the thumbnail image element
+                img.src = reader.result; // Update src attribute with the uploaded file
+                preview.classList.remove('hidden'); // Remove the 'hidden' class to display the preview
+            }
+
+            reader.readAsDataURL(file);
+            fileInput.setAttribute('data-empty', 'false');
+        } else {
+            preview.classList.add('hidden'); // Hide preview if no file selected
+            fileInput.setAttribute('data-empty', 'true');
+        }
+    }
+
      function checkValue(input, index) {
         var value = input.value;
         var error = document.getElementById('error' + index);

@@ -138,7 +138,7 @@
                     <a href="{{ route('dashboard.packages.show', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Manage
                     </a>
-                    <a href="{{ route('dashboard.packages.index', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
+                    <a href="{{ route('dashboard.tryouts.students.index', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">
                         Students
                     </a>
                     <a href="{{ route('dashboard.packages.edit', $package) }}" class="flex items-center justify-between font-bold text-sm w-full">

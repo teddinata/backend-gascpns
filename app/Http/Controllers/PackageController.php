@@ -43,6 +43,8 @@ class PackageController extends Controller
             'status'            => 'nullable|boolean',
             'sale_start_at'     => 'nullable|date_format:Y-m-d\TH:i',
             'sale_end_at'       => 'nullable|date_format:Y-m-d\TH:i',
+            'start_at'          => 'nullable|date_format:Y-m-d\TH:i',
+            'end_at'            => 'nullable|date_format:Y-m-d\TH:i',
             'discount'          => 'nullable|numeric|min:0|max:' . $request['price'],
             'voucher_code'      => 'nullable|string|max:255',
             'cover_path'        => 'nullable|image|max:2048',
@@ -71,6 +73,14 @@ class PackageController extends Controller
 
             if ($request->has('sale_end_at')) {
                 $validatedData['sale_end_at'] = date('Y-m-d H:i:s', strtotime($validatedData['sale_end_at']));
+            }
+
+            if ($request->has('start_at')) {
+                $validatedData['start_at'] = date('Y-m-d H:i:s', strtotime($validatedData['start_at']));
+            }
+
+            if ($request->has('end_at')) {
+                $validatedData['end_at'] = date('Y-m-d H:i:s', strtotime($validatedData['end_at']));
             }
 
             $validatedData['slug'] = Str::slug($validatedData['name']);
@@ -137,6 +147,8 @@ class PackageController extends Controller
             'status'            => 'nullable|boolean',
             'sale_start_at'     => 'nullable|date_format:Y-m-d\TH:i',
             'sale_end_at'       => 'nullable|date_format:Y-m-d\TH:i',
+            'start_at'          => 'nullable|date_format:Y-m-d\TH:i',
+            'end_at'            => 'nullable|date_format:Y-m-d\TH:i',
             'discount'          => 'nullable|numeric|min:0|max:' . $request['price'],
             'voucher_code'      => 'nullable|string|max:255',
             'cover_path'        => 'nullable|image|max:2048',
@@ -166,6 +178,14 @@ class PackageController extends Controller
 
             if ($request->has('sale_end_at')) {
                 $validatedData['sale_end_at'] = date('Y-m-d H:i:s', strtotime($validatedData['sale_end_at']));
+            }
+
+            if ($request->has('start_at')) {
+                $validatedData['start_at'] = date('Y-m-d H:i:s', strtotime($validatedData['start_at']));
+            }
+
+            if ($request->has('end_at')) {
+                $validatedData['end_at'] = date('Y-m-d H:i:s', strtotime($validatedData['end_at']));
             }
 
             // store the cover image

@@ -43,9 +43,15 @@ class CourseQuestionController extends Controller
         DB::beginTransaction();
 
         try {
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('question_images', 'public');
+            }
+
             $question = $course->questions()->create([
-                'question' => $request->question,
-                'score'    => $request->score,
+                'question'      => $request->question,
+                'image'         => $imagePath ?? null, // gunakan $imagePath yang sudah diperbaiki
+                'explanation'   => $request->explanation,
+                'score'         => $request->score,
             ]);
 
             foreach ($request->answers as $index => $answerText) {
@@ -92,9 +98,16 @@ class CourseQuestionController extends Controller
         DB::beginTransaction();
 
         try {
+            // request image
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('question_images', 'public');
+            }
+
             $courseQuestion->update([
-                'question' => $request->question,
-                'score'    => $request->score,
+                'question'      => $request->question,
+                'image'         => $imagePath ?? $courseQuestion->image,
+                'explanation'   => $request->explanation,
+                'score'         => $request->score,
             ]);
 
             $courseQuestion->answers()->delete();

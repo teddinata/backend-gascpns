@@ -11,6 +11,7 @@ use App\Http\Controllers\MentorController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageTryOutController;
+use App\Http\Controllers\TryOutStudentController;
 use App\Models\PackageTryOut;
 
 Route::get('/', function () {
@@ -52,6 +53,25 @@ Route::middleware('auth')->group(function () {
         Route::post('/course/students/save/{course}', [CourseStudentController::class, 'store'])
         ->middleware('role:teacher')
         ->name('courses.course_students.store');
+
+        // add try out to student
+
+
+        Route::get('/tryout/students/show/{package}', [TryOutStudentController::class, 'index'])
+        ->middleware('role:teacher')
+        ->name('tryouts.students.index');
+
+        Route::get('/tryout/students/create/{package}', [TryOutStudentController::class, 'create'])
+        ->middleware('role:teacher')
+        ->name('tryouts.students.create');
+
+        Route::post('/tryout/students/save/{package}', [TryOutStudentController::class, 'store'])
+        ->middleware('role:teacher')
+        ->name('tryouts.students.store');
+
+        Route::delete('/tryouts/students/delete/{package}/{student}', [TryOutStudentController::class, 'delete'])
+        ->middleware('role:teacher')
+        ->name('tryouts.students.delete');
 
         Route::get('/learning/finished/{course}', [LearningController::class, 'learning_finished'])
         ->middleware('role:student')

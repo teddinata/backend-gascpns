@@ -138,6 +138,20 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-2 gap-5">
+        <div class="flex flex-col gap-[10px]">
+            <p class="font-semibold">Kapan Tryout Bisa Mulai Dikerjakan?</p>
+            <input type="datetime-local" class="w-[350px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus:border-2 focus:border-[#0A090B]"
+                name="start_at" >
+        </div>
+
+        <div class="flex flex-col gap-[10px]">
+            <p class="font-semibold">Kapan Tryout Berakhir?</p>
+            <input type="datetime-local" class="w-[350px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] focus:border-2 focus:border-[#0A090B]"
+                name="end_at" >
+        </div>
+    </div>
+
     {{-- discount price and price normal --}}
     <div class="grid grid-cols-2 gap-5">
         <div class="flex flex-col gap-[10px]">

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('course_students', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('course_id')->constrained()->onDelete('cascade')->nullable();
+            // relation with course nullable
+            $table->unsignedBigInteger('course_id')->nullable();
             // try out
-            $table->foreignId('package_tryout_id')->constrained('package_tryouts')->onDelete('cascade')->nullable();
+            $table->foreignId('package_tryout_id')->constrained('packages')->onDelete('cascade')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             // created_by is the user who created the question

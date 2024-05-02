@@ -66,4 +66,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(LoginAttempt::class, 'email', 'email');
     }
+
+    public function studentAnswers()
+    {
+        return $this->hasMany(StudentAnswer::class, 'user_id', 'id');
+    }
+
+    public function packageTryOuts()
+    {
+        return $this->belongsToMany(PackageTryOut::class, 'course_students', 'user_id', 'package_tryout_id');
+    }
+
+    // package
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class, 'course_students', 'user_id', 'package_tryout_id');
+    }
 }
