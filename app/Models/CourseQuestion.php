@@ -55,4 +55,9 @@ class CourseQuestion extends Model
     {
         return $this->hasMany(StudentAnswer::class, 'course_question_id', 'id');
     }
+
+    public function packageTryouts()
+    {
+        return $this->belongsToMany(PackageTryout::class);
+    }
 }

@@ -76,6 +76,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(PackageTryOut::class, 'course_students', 'user_id', 'package_tryout_id');
     }
+    public function enrolledPackageTryouts()
+    {
+        // return $this->belongsToMany(PackageTryOut::class, 'package_tryout_enrollments', 'user_id', 'package_tryout_id');
+        return $this->belongsToMany(Package::class, 'course_students', 'user_id', 'package_tryout_id');
+    }
 
     // package
     public function packages()

@@ -21,6 +21,7 @@
                         Dashboard
                     </p>
                 </a>
+            </li>
             <li>
                 <a href="{{ route('dashboard.packages.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
                     {{ request()->routeIs(['dashboard.packages.*', 'dashboard.tryouts.students.*']) ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
@@ -97,7 +98,8 @@
                         Dashboard
                     </p>
                 </a>
-            <li>
+            </li>
+
             <li>
                 <a href="{{ route('dashboard.learning.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
                     {{ request()->routeIs('dashboard.learning.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}

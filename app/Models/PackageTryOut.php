@@ -59,4 +59,9 @@ class PackageTryOut extends Model
     //     return $this->hasMany(CourseStudent::class, 'package_tryout_id');
     // }
 
+    public function questions()
+    {
+        return $this->belongsToMany(CourseQuestion::class);
+    }
+
 }

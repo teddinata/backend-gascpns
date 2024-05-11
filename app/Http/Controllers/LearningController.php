@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Course;
 use App\Models\CourseQuestion;
+use App\Models\CourseStudent;
 use App\Models\CourseAnswer;
 use Illuminate\Console\View\Components\Alert;
 use Illuminate\Validation\ValidationException;
@@ -21,37 +22,119 @@ class LearningController extends Controller
     {
         $user = Auth::user();
 
-        $myCourses = $user->courses()->with('category')->orderBy('id', 'desc')->paginate(5);
+        // Ambil semua paket tryout dari user
+        // $myTryouts = $user->packages()
+        //     ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
+        //     ->paginate(10);
+        $myTryouts = $user->enrolledPackageTryouts()
+        ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
+            ->paginate(10);
+        // dd($myTryouts);
 
-        foreach ($myCourses as $course) {
-            $totalQuestionsCount = $course->questions()->count();
+        foreach ($myTryouts as $tryout) {
+            foreach ($tryout->packageTryOuts as $tryoutItem) {
+                $course = $tryoutItem->course;
+                $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
+                    ->whereIn('course_question_id', $course->questions->pluck('id'))
+                    ->pluck('course_question_id')
+                    ->toArray();
 
-            $answeredQuestionsCount = StudentAnswer::where('user_id', $user->id)
-                ->whereHas('question', function ($query) use ($course) {
-                    $query->where('course_id', $course->id);
-                })->distinct()->count('course_question_id');
-
-            if($answeredQuestionsCount < $totalQuestionsCount){
-                $firstUnansweredQuestion = CourseQuestion::where('course_id', $course->id)
-                    ->whereNotIn('id', function($query)use ($user) {
-                        $query->select('course_question_id')->from('student_answers')->where('user_id', $user->id);
-                    })
-                    ->orderBy('id', 'asc')
-                    ->first();
-
-                $course->nextQuestionId = $firstUnansweredQuestion ? $firstUnansweredQuestion->id : null;
-            } else {
-                $course->nextQuestionId = null;
+                foreach ($course->questions as $question) {
+                    if (!in_array($question->id, $answeredQuestionsIds)) {
+                        $question->nextQuestion = $question;
+                        break;
+                    }
+                }
             }
         }
 
-        return view('student.courses.index', compact('myCourses'));
+        // dd count question
+        // dd($totalQuestionsCount);
+        // dd($myTryouts);
+        // dd($myTryouts);
+
+        // foreach ($myTryouts as $tryout) {
+        //     $totalQuestionsCount = $tryout->course->questions()->count();
+
+        //     $answeredQuestionsCount = StudentAnswer::where('user_id', $user->id)
+        //         ->whereHas('question', function ($query) use ($tryout) {
+        //             $query->where('package_tryout_id', $tryout->id);
+        //         })->distinct()->count('course_question_id');
+
+        //     if ($answeredQuestionsCount < $totalQuestionsCount) {
+        //         $firstUnansweredQuestion = CourseQuestion::where('course_id', $tryout->course_id)
+        //             ->whereNotIn('id', function ($query) use ($user) {
+        //                 $query->select('course_question_id')->from('student_answers')->where('user_id', $user->id);
+        //             })
+        //             ->orderBy('id', 'asc')
+        //             ->first();
+
+        //         $tryout->nextQuestionId = $firstUnansweredQuestion ? $firstUnansweredQuestion->id : null;
+        //     } else {
+        //         $tryout->nextQuestionId = null;
+        //     }
+        // }
+
+        return view('student.courses.index', compact('myTryouts'));
     }
 
     /**
      * Show the view for learning.
      */
-    public function learning(Course $course, $question)
+    public function learning($package, $questionId)
+    {
+        // dd($packageId, $questionId);
+        $user = Auth::user();
+
+        $course = Course::findOrFail($package)->load('questions.answers');
+
+        $myTryouts = $user->enrolledPackageTryouts()
+            ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions.answers'])
+            ->paginate(10);
+
+        $isEnrolled =  $myTryouts->contains('id', $package);
+        // dd($isEnrolled);
+
+        if(!$isEnrolled){
+            return redirect()->route('dashboard.learning.index')->with('error', 'You are not enrolled in this course');
+        }
+
+        $question = CourseQuestion::findOrFail($questionId)->load('answers');
+
+
+        $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
+            ->pluck('course_question_id')
+            ->toArray();
+
+        $packageQuestions = $question->course->questions;
+
+        $nextQuestionId = null;
+        $hasUnansweredQuestion = false;
+
+        foreach ($packageQuestions as $index => $q) {
+            if (!in_array($q->id, $answeredQuestionsIds)) {
+                $hasUnansweredQuestion = true;
+                $nextQuestionId = $q->id;
+                break;
+            }
+        }
+        // dd([
+        //     'course' => $course,
+        //     'question' => $question,
+        //     'nextQuestionId' => $nextQuestionId,
+        //     'hasUnansweredQuestion' => $hasUnansweredQuestion
+        // ]);
+        dd($nextQuestionId);
+
+        return view('student.courses.learning', [
+            'course' => $course,
+            'question' => $question,
+            'nextQuestionId' => $nextQuestionId,
+            'hasUnansweredQuestion' => $hasUnansweredQuestion
+        ]);
+    }
+
+    public function learning_old(Course $course, $question)
     {
         $user = Auth::user();
 
@@ -73,6 +156,7 @@ class LearningController extends Controller
             })
             ->orderBy('id', 'asc')
             ->first();
+
 
         return view('student.courses.learning', [
             'course' => $course,

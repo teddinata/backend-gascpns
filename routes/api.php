@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\TryOutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,5 +28,20 @@ Route::group(['prefix' => 'v1'], function () {
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
     // end point check user
     Route::get('user', [AuthController::class, 'fetch']);
+
+    // route for tryout on sale without auth
+    Route::get('tryout/on-sale', [TryOutController::class, 'onSale']);
+
+    // route middleware auth for user access tryout
+    Route::group(['middleware' => ['auth:sanctum']], function () {
+        // route for user access tryout
+        Route::apiResource('tryout', TryOutController::class);
+
+        // route for start tryout
+        Route::post('tryout/{packageId}/start', [TryOutController::class, 'startTryout']);
+
+        Route::get('/tryout/{tryoutId}/navigate', [TryOutController::class, 'navigation']);
+
+    });
 
 });

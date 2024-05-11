@@ -12,15 +12,20 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageTryOutController;
 use App\Http\Controllers\TryOutStudentController;
+use App\Http\Controllers\DashboardController;
 use App\Models\PackageTryOut;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard-new');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard-new');
+// })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -77,13 +82,21 @@ Route::middleware('auth')->group(function () {
         ->middleware('role:student')
         ->name('learning.finished.course');
 
-        Route::get('/learning/rapport/{course}', [LearningController::class, 'learning_rapport'])
-        ->middleware('role:student')
-        ->name('learning.rapport.course');
+        // Route::get('/learning/rapport/{course}', [LearningController::class, 'learning_rapport'])
+        // ->middleware('role:student')
+        // ->name('learning.rapport.course');
 
-        Route::get('/learning/{course}/{question}', [LearningController::class, 'learning'])
+        // Route::get('/learning/{course}/{question}', [LearningController::class, 'learning'])
+        // ->middleware('role:student')
+        // ->name('learning.course');
+
+        Route::get('/learning/package/{package}/question/{questionId}', [LearningController::class, 'learning'])
         ->middleware('role:student')
-        ->name('learning.course');
+        ->name('learning.package.question');
+
+        Route::get('/learning/package/{package}/result', [LearningController::class, 'learning_rapport'])
+        ->middleware('role:student')
+        ->name('learning.package.result');
 
         Route::post('/learning/{course}/{question}', [StudentAnswerController::class, 'store'])
         ->middleware('role:student')
