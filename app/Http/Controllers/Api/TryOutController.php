@@ -13,6 +13,7 @@ use App\Models\Tryout;
 use App\Models\TryoutDetail;
 use App\Models\Course;
 use App\Models\CourseQuestion;
+use App\Models\CourseAnswer;
 
 class TryOutController extends Controller
 {
@@ -153,6 +154,8 @@ class TryOutController extends Controller
 
             // Menyiapkan data yang akan dikembalikan
             $questionData = [
+                'id' => $questionDetail->id, // Nomor detail soal
+                'tryout_id' => $tryout->id, // Nomor tryout
                 'question_number' => $questionDetail->id, // Nomor soal
                 'course_question_id' => $questionDetail->courseQuestion->id, // Nomor soal
                 'question' => $questionDetail->courseQuestion->question, // Pertanyaan
@@ -165,6 +168,35 @@ class TryOutController extends Controller
             return ResponseFormatter::error($e->getMessage(), 'Data soal gagal diambil', 500);
         }
     }
+
+    public function answerQuestion(Request $request, $tryoutId, $questionId)
+    {
+        $user = Auth::user();
+
+        // Cari detail tryout
+        $tryoutDetail = TryoutDetail::where('tryout_id', $tryoutId)
+            ->where('course_question_id', $questionId)
+            ->first();
+
+        if (!$tryoutDetail) {
+            return ResponseFormatter::error(null, 'Soal tidak ditemukan dalam tryout ini', 404);
+        }
+
+        $answerId = $request->answer_id;
+        $answer = CourseAnswer::find($answerId);
+        if (!$answer) {
+            return ResponseFormatter::error(null, 'Jawaban tidak ditemukan', 404);
+        }
+
+        // Perbarui jawaban jika sudah ada, jika tidak, buat jawaban baru
+        $tryoutDetail->updateOrCreate(
+            ['tryout_id' => $tryoutId, 'course_question_id' => $questionId],
+            ['answer' => $answer->answer, 'score' => $answer->score, 'updated_by' => $user->id]
+        );
+
+        return ResponseFormatter::success(null, 'Jawaban berhasil disimpan');
+    }
+
 
     /**
      * Show the form for editing the specified resource.
