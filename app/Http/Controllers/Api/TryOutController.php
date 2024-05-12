@@ -135,9 +135,35 @@ class TryOutController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($tryoutId, $questionNumber)
     {
-        //
+        try {
+            // Mengambil detail tryout beserta daftar soal dan jawaban
+            $tryout = Tryout::with(['tryout_details.courseQuestion' => function ($query) {
+                $query->with(['answers:id,course_question_id,answer']);
+            }])->findOrFail($tryoutId);
+
+            // Mencari detail dari soal yang diminta
+            $questionDetail = $tryout->tryout_details->where('course_question_id', $questionNumber)->first();
+
+            // Jika nomor soal tidak ditemukan
+            if (!$questionDetail) {
+                return ResponseFormatter::error(null, 'Nomor soal tidak ditemukan', 404);
+            }
+
+            // Menyiapkan data yang akan dikembalikan
+            $questionData = [
+                'question_number' => $questionDetail->id, // Nomor soal
+                'course_question_id' => $questionDetail->courseQuestion->id, // Nomor soal
+                'question' => $questionDetail->courseQuestion->question, // Pertanyaan
+                'image' => $questionDetail->courseQuestion->image, // Gambar pertanyaan
+                'answers' => $questionDetail->courseQuestion->answers
+            ];
+
+            return ResponseFormatter::success($questionData, 'Data soal berhasil diambil');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 'Data soal gagal diambil', 500);
+        }
     }
 
     /**

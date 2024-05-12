@@ -42,6 +42,9 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::get('/tryout/{tryoutId}/navigate', [TryOutController::class, 'navigation']);
 
+        Route::get('/tryout/{tryoutId}/question/{questionNumber}', [TryoutController::class, 'show'])
+            ->name('tryout.show');
+
     });
 
 });
