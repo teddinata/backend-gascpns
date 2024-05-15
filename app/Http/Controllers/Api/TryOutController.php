@@ -14,6 +14,7 @@ use App\Models\TryoutDetail;
 use App\Models\Course;
 use App\Models\CourseQuestion;
 use App\Models\CourseAnswer;
+use Illuminate\Support\Facades\DB;
 
 class TryOutController extends Controller
 {
@@ -71,6 +72,11 @@ class TryOutController extends Controller
             ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
             ->get();
 
+        // buat kondisi jika siswa belum membeli tryout
+        if ($myTryouts->isEmpty()) {
+            return ResponseFormatter::error(null, 'Kamu belum membeli paket tryout', 200);
+        }
+
          // Ambil semua tryout yang dimulai oleh user
         $startedTryouts = Tryout::where('package_id', $myTryouts->pluck('id'))
             ->where('user_id', $user->id)
@@ -88,6 +94,13 @@ class TryOutController extends Controller
             $tryout->is_started = in_array($tryout->id, $startedTryouts);
             // dd($tryout->is_started);
 
+            $currentTryout = Tryout::where('user_id', $user->id)
+                ->where('package_id', $tryout->id)
+                ->whereNotNull('started_at')
+                ->first();
+
+            $tryout->current_tryout = $currentTryout;
+
             foreach ($tryout->packageTryOuts as $tryoutItem) {
                 $course = $tryoutItem->course;
                 $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
@@ -103,6 +116,7 @@ class TryOutController extends Controller
                 }
             }
         }
+
 
         return ResponseFormatter::success($myTryouts, 'Data paket tryout berhasil diambil');
     }
@@ -128,6 +142,8 @@ class TryOutController extends Controller
                 'user_id' => $user->id,
                 'package_id' => $packageId,
                 'started_at' => now(),
+                // finished at diisi ditambahkan 100 menit dari waktu sekarang
+                'finished_at' => now()->addMinutes(100),
                 'created_by' => $user->id,
             ]);
 

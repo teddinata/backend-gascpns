@@ -58,14 +58,21 @@ class Package extends Model
     }
 
     // students
-    // public function students()
-    // {
-    //     return $this->belongsToMany(User::class, 'course_students', 'package_tryout_id', 'user_id');
-    // }
-
     public function students()
     {
-        return $this->hasManyThrough(User::class, PackageTryOut::class, 'package_id', 'id', 'id', 'package_tryout_id');
+        return $this->belongsToMany(User::class, 'course_students', 'package_tryout_id', 'user_id');
+    }
+
+    // public function students()
+    // {
+    //     // course_students
+    //     return $this->hasManyThrough(User::class, CourseStudent::class, 'package_tryout_id', 'id', 'id', 'user_id');
+    // }
+
+    // enrolledstudents
+    public function enrolledStudents()
+    {
+        return $this->hasManyThrough(User::class, PackageTryOut::class, 'package_id', 'id', 'id', 'course_id');
     }
 
     public function packageTryOuts()
