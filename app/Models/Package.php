@@ -73,6 +73,11 @@ class Package extends Model
         return $this->hasMany(PackageTryOut::class, 'package_id', 'id');
     }
 
+    public function courseStudents()
+    {
+        return $this->belongsToMany(User::class, 'course_students', 'package_tryout_id', 'user_id');
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by', 'id');

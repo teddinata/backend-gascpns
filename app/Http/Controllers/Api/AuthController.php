@@ -12,6 +12,7 @@ use Laravel\Fortify\Rules\Password;
 // change depedency password
 // use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Referral;
 
 
 
@@ -29,6 +30,7 @@ class AuthController extends Controller
                 'phone' => ['nullable', 'string', 'max:255'],
                 'password' => ['required', 'string', 'min:8', 'confirmed', new Password],
                 'password_confirmation' => ['required', 'string', 'min:8'],
+                'referral_code' => 'nullable|exists:users,referral_code',
             ]);
 
             // Check email existence
@@ -36,6 +38,17 @@ class AuthController extends Controller
                 throw ValidationException::withMessages([
                     'email' => ['Email is already taken. Please choose another.']
                 ]);
+            }
+
+            // check referral code
+            $referrer = null;
+            if ($request->referral_code) {
+                $referrer = User::where('referral_code', $request->referral_code)->first();
+                if (!$referrer) {
+                    throw ValidationException::withMessages([
+                        'referral_code' => ['Referral code is invalid.']
+                    ]);
+                }
             }
 
             // Creating or getting a new user
@@ -47,9 +60,22 @@ class AuthController extends Controller
                     'birthdate' => $request->birthdate,
                     'phone' => $request->phone,
                     'password' => Hash::make($request->password),
-                    'roles' => 'user',
+                    'role' => 'user',
                 ]
             );
+
+            // Assigning referral code to the user
+            if ($referrer) {
+                Referral::create([
+                    'user_id' => $user->id,
+                    'referred_by' => $referrer->id,
+                    'referral_code' => $user->referral_code,
+                ]);
+
+                // Tambah saldo pada referrer 10.000
+                $referrer->increment('wallet_balance', 10000);
+                $user->increment('wallet_balance', 10000); // Tambah saldo pada pengguna baru
+            }
 
             // Creating a token for the newly created user
             $tokenResult = $user->createToken('authToken')->plainTextToken;

@@ -34,6 +34,7 @@ Route::group(['prefix' => 'v1'], function () {
 
     // route middleware auth for user access tryout
     Route::group(['middleware' => ['auth:sanctum']], function () {
+        Route::get('tryout/favorite', [TryOutController::class, 'soalFavorite']);
         // route for user access tryout
         Route::apiResource('tryout', TryOutController::class);
 

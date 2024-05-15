@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -24,7 +25,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'roles',
+        'role',
         'phone',
         'address',
         'username',
@@ -32,6 +33,8 @@ class User extends Authenticatable
         'status',
         'birthdate',
         'last_login',
+        'wallet_balance',
+        'referral_code',
     ];
 
     /**
@@ -43,6 +46,35 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    /**
+     * generate referral code
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            $user->referral_code = self::generateReferralCode($user->name);
+        });
+    }
+
+    private static function generateReferralCode($name)
+    {
+        $namePart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $name), 0, 4)); // Ambil 3 huruf pertama dari nama
+        $randomPart = strtoupper(Str::random(4)); // 3 karakter acak
+
+        $code = 'GAS' . $namePart . $randomPart;
+
+        // Pastikan kode referral unik
+        while (self::where('referral_code', $code)->exists()) {
+            $randomPart = strtoupper(Str::random(3));
+            $code = 'GAS' . $namePart . $randomPart;
+        }
+
+        return $code;
+    }
+
 
     /**
      * Get the attributes that should be cast.
@@ -86,5 +118,15 @@ class User extends Authenticatable
     public function packages()
     {
         return $this->belongsToMany(Package::class, 'course_students', 'user_id', 'package_tryout_id');
+    }
+
+    public function referrals()
+    {
+        return $this->hasMany(Referral::class, 'referred_by');
+    }
+
+    public function referrer()
+    {
+        return $this->belongsTo(User::class, 'referred_by');
     }
 }

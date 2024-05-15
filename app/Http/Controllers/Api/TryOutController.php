@@ -22,6 +22,40 @@ class TryOutController extends Controller
     {
         $tryouts = Package::paginate(6);
 
+        foreach ($tryouts as $tryout) {
+            $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+        }
+
+        return ResponseFormatter::success($tryouts, 'Data paket tryout berhasil diambil');
+    }
+
+    public function soalFavorite()
+    {
+
+        $user = Auth::user();
+
+        if (!$user) {
+            return ResponseFormatter::error(null, 'User not authenticated', 401);
+        }
+
+        // Mengambil semua paket tryout dan menghitung jumlah user yang sudah membeli setiap paket
+        $tryouts = Package::withCount(['courseStudents as students_count'])
+            ->paginate(6);
+
+        // Olah data image dan cek apakah user telah membeli paket
+        foreach ($tryouts as $tryout) {
+            $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+
+            // Cek jumlah tryout yang sudah dibeli oleh user
+            $enrolledPackageTryouts = $user->enrolledPackageTryouts()->pluck('package_tryout_id')->toArray();
+            $tryout->is_enrolled = in_array($tryout->id, $enrolledPackageTryouts);
+
+            // cek user yang login sudah membeli paket atau belum
+            $tryout->is_enrolled = $user->enrolledPackageTryouts()
+            ->where('packages.id', $tryout->id)
+            ->exists();
+        }
+
         return ResponseFormatter::success($tryouts, 'Data paket tryout berhasil diambil');
     }
 
@@ -37,7 +71,23 @@ class TryOutController extends Controller
             ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
             ->get();
 
+         // Ambil semua tryout yang dimulai oleh user
+        $startedTryouts = Tryout::where('package_id', $myTryouts->pluck('id'))
+            ->where('user_id', $user->id)
+            ->pluck('package_id')
+            ->toArray();
+        // dd($startedTryouts);
+
+        // Loop untuk memeriksa apakah user sudah memulai tryout
         foreach ($myTryouts as $tryout) {
+            $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+
+            // hitung jumlah siswa yang sudah membeli paket
+            $tryout->students_count = $tryout->courseStudents()->count();
+
+            $tryout->is_started = in_array($tryout->id, $startedTryouts);
+            // dd($tryout->is_started);
+
             foreach ($tryout->packageTryOuts as $tryoutItem) {
                 $course = $tryoutItem->course;
                 $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
