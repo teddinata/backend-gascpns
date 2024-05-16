@@ -176,9 +176,32 @@ class TryOutController extends Controller
     {
         // dd($tryoutId);
         $tryout = Tryout::with('tryout_details')->findOrFail($tryoutId);
-        $tryoutDetails = $tryout->tryoutDetails;
+        $tryoutDetails = $tryout->tryout_details;
 
-        return ResponseFormatter::success($tryout, 'Data tryout berhasil diambil');
+        // Menambahkan nomor soal dan navigasi
+        if ($tryoutDetails && $tryoutDetails->count() > 0) {
+            // Menambahkan nomor soal dan navigasi
+            foreach ($tryoutDetails as $index => $detail) {
+                $detail->question_number = $index + 1;
+                $detail->prev_question = $index > 0 ? $tryoutDetails[$index - 1]->course_question_id : null;
+                $detail->next_question = $index < ($tryoutDetails->count() - 1) ? $tryoutDetails[$index + 1]->course_question_id : null;
+            }
+        } else {
+            // Jika $tryoutDetails null atau kosong, beri pesan yang sesuai
+            return ResponseFormatter::error(null, 'No tryout details found', 404);
+        }
+
+        $data = [
+            'tryout_id' => $tryout->id,
+            'user_id' => $tryout->user_id,
+            'package_id' => $tryout->package_id,
+            'started_at' => $tryout->started_at,
+            'finished_at' => $tryout->finished_at,
+            'total_questions' => $tryoutDetails->count(),
+            'tryout_details' => $tryoutDetails,
+        ];
+
+        return ResponseFormatter::success($data, 'Data navigasi tryout berhasil diambil');
     }
 
 
