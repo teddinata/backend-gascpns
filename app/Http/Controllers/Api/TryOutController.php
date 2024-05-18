@@ -367,9 +367,9 @@ class TryOutController extends Controller
         $tryoutDetail->next = $next;
 
         // pengecekan apakah try out sudah selesai atau belum, jika sudah selesai maka tidak bisa menjawab soal
-        // if ($tryoutDetail->tryout->finished_at < now()) {
-        //     return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
-        // }
+        if ($tryoutDetail->tryout->finished_at < now()) {
+            return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
+        }
 
         $answerId = intval($request->answer_id);
         $data = [
