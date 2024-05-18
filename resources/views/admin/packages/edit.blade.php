@@ -37,6 +37,14 @@
     #toggle:checked + .toggle-switch {
     background-color: #2b82fe; /* Mengubah warna latar belakang toggle switch menjadi biru ketika status dipublikasikan */
     }
+
+    #togglePremium:checked + .toggle-switch::before {
+    transform: translateX(24px);
+    }
+
+    #togglePremium:checked + .toggle-switch {
+    background-color: #2b82fe; /* Mengubah warna latar belakang toggle switch menjadi biru ketika status dipublikasikan */
+    }
 </style>
 @endpush
 
@@ -189,6 +197,17 @@
         </div>
     </div>
 
+    <div class="flex flex-col gap-[10px]">
+        <p class="font-semibold">Premium</p>
+        <div class="flex items-center gap-5">
+            <label for="togglePremium" class="flex items-center gap-[10px]">
+                <input type="checkbox" id="togglePremium" class="hidden" value="{{ $package->is_premium == 1 ? '1' : '0' }}" name="is_premium" {{ $package->is_premium == 1 ? 'checked' : '' }}>
+                <div class="toggle-switch"></div>
+                <span id="toggleTextPremium" class="text-gray-600">{{ $package->is_premium == 1 ? 'Is Premium' : 'Is Free' }}</span>
+            </label>
+        </div>
+    </div>
+
 
     <label class="font-semibold flex items-center gap-[10px]">
         <input
@@ -248,8 +267,16 @@
         toggle.addEventListener('change', function() {
             const status = toggle.checked ? 1 : 0;
             toggleText.textContent = toggle.checked ? 'Publish' : 'Draft';
+        });
+
+        const togglePremium = document.getElementById('togglePremium');
+        const toggleTextPremium = document.getElementById('toggleTextPremium');
+
+        togglePremium.addEventListener('change', function() {
+            const status = togglePremium.checked ? 1 : 0;
+            toggleTextPremium.textContent = togglePremium.checked ? 'Is Premium' : 'Is Free';
+        });
     });
-});
 </script>
 
 <script>

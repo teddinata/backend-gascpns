@@ -49,6 +49,7 @@ class PackageController extends Controller
             'voucher_code'      => 'nullable|string|max:255',
             'cover_path'        => 'nullable|image|max:2048',
             'thumbnail_path'    => 'nullable|image|max:2048',
+            'is_premium'        => 'nullable|boolean',
         ]);
 
         // Store the data...
@@ -153,6 +154,7 @@ class PackageController extends Controller
             'voucher_code'      => 'nullable|string|max:255',
             'cover_path'        => 'nullable|image|max:2048',
             'thumbnail_path'    => 'nullable|image|max:2048',
+            'is_premium'        => 'nullable|boolean',
         ]);
         // dd($validatedData['status']);
 

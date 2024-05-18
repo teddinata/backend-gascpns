@@ -37,6 +37,14 @@
     #toggle:checked + .toggle-switch {
     background-color: #2b82fe; /* Mengubah warna latar belakang toggle switch menjadi biru ketika status dipublikasikan */
     }
+
+    #togglePremium:checked + .toggle-switch::before {
+    transform: translateX(24px);
+    }
+
+    #togglePremium:checked + .toggle-switch {
+    background-color: #2b82fe; /* Mengubah warna latar belakang toggle switch menjadi biru ketika status dipublikasikan */
+    }
 </style>
 @endpush
 
@@ -180,6 +188,19 @@
                 <span id="toggleText" class="text-gray-600">Draft</span>
             </label>
         </div>
+
+
+    </div>
+
+    <div class="flex flex-col gap-[10px]">
+        <p class="font-semibold">Is Premium</p>
+        <div class="flex items-center gap-5">
+            <label for="togglePremium" class="flex items-center gap-[10px]">
+                <input type="checkbox" id="togglePremium" class="hidden" value="0" name="is_premium">
+                <div class="toggle-switch"></div>
+                <span id="toggleTextPremium" class="text-gray-600">Is Free</span>
+            </label>
+        </div>
     </div>
 
 
@@ -237,11 +258,20 @@
         const toggle = document.getElementById('toggle');
         const toggleText = document.getElementById('toggleText');
 
+        const togglePremium = document.getElementById('togglePremium');
+        const toggleTextPremium = document.getElementById('toggleTextPremium');
+
         toggle.addEventListener('change', function() {
             const status = toggle.checked ? 1 : 0;
             toggleText.textContent = toggle.checked ? 'Publish' : 'Draft';
+        });
+
+        togglePremium.addEventListener('change', function() {
+            const status = togglePremium.checked ? 1 : 0; // Changed from toggle to togglePremium
+            toggleTextPremium.textContent = togglePremium.checked ? 'Is Premium' : 'Is Free';
+        });
     });
-});
+
 </script>
 
 <script>
@@ -338,6 +368,8 @@
             input.value = null;
         }
     }
+
+
 
 </script>
 @endpush
