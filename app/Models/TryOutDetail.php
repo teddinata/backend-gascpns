@@ -9,9 +9,12 @@ class TryOutDetail extends Model
 {
     use HasFactory;
 
+    protected $table = 'try_out_details';
+
     protected $fillable = [
         'tryout_id',
         'course_question_id',
+        'course_answer_id',
         'answer',
         'score',
         'created_by',
@@ -27,4 +30,9 @@ class TryOutDetail extends Model
     {
         return $this->belongsTo(CourseQuestion::class);
     }
+
+    // public function answers()
+    // {
+    //     return $this->belongsTo(CourseAnswer::class);
+    // }
 }

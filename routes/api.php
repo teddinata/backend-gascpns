@@ -43,12 +43,20 @@ Route::group(['prefix' => 'v1'], function () {
 
         Route::get('/tryout/{tryoutId}/navigate', [TryOutController::class, 'navigation']);
 
-        Route::get('/tryout/{tryoutId}/question/{questionNumber}', [TryoutController::class, 'show'])
-            ->name('tryout.show');
+        Route::get('/tryout/{questionId}', [TryOutController::class, 'show']);
 
-        Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
-            ->middleware('auth:sanctum')
+        // Route::get('/tryout/{tryoutId}/question/{questionNumber}', [TryoutController::class, 'show'])
+        //     ->name('tryout.show');
+
+        Route::post('/tryout/{questionId}/answer', [TryOutController::class, 'answerQuestion'])
             ->name('tryout.answer');
+
+        // endpoint finish tryout
+        Route::post('/tryout/{tryoutId}/finish', [TryOutController::class, 'finishTryout']);
+
+        // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
+        //     ->middleware('auth:sanctum')
+        //     ->name('tryout.answer');
 
 
 

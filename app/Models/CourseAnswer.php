@@ -44,4 +44,9 @@ class CourseAnswer extends Model
     {
         return $this->belongsTo(CourseQuestion::class, 'course_question_id');
     }
+
+    // public function detail()
+    // {
+    //     return $this->hasMany(TryOutDetail::class, 'answer_id');
+    // }
 }

@@ -108,7 +108,7 @@ class AuthController extends Controller
     public function fetch(Request $request)
     {
         // check user with role admin
-        $user = User::where('roles', 'admin')->get();
+        $user = User::where('role', 'user')->get();
         return ResponseFormatter::success(
             $user,'Data user berhasil diambil');
     }

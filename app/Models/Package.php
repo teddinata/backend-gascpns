@@ -36,6 +36,7 @@ class Package extends Model
         'created_by',
         'updated_by',
         'deleted_by',
+        'is_premium'
     ];
 
     // fill created_by, updated_by, deleted_by

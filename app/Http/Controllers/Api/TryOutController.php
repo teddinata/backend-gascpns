@@ -97,9 +97,20 @@ class TryOutController extends Controller
             $currentTryout = Tryout::where('user_id', $user->id)
                 ->where('package_id', $tryout->id)
                 ->whereNotNull('started_at')
+                ->with('tryout_details')
                 ->first();
 
             $tryout->current_tryout = $currentTryout;
+            $tryout->next = $currentTryout->tryout_details->first()->id;
+
+            // total answered questions
+            $answeredQuestions = $currentTryout->tryout_details->whereNotNull('answer')->count();
+            $unansweredQuestions = $currentTryout->tryout_details->whereNull('answer')->count();
+            $totalQuestions = $currentTryout->tryout_details->count();
+
+            $tryout->answered_questions = $answeredQuestions;
+            $tryout->unanswered_questions = $unansweredQuestions;
+            $tryout->total_questions = $totalQuestions;
 
             foreach ($tryout->packageTryOuts as $tryoutItem) {
                 $course = $tryoutItem->course;
@@ -145,6 +156,8 @@ class TryOutController extends Controller
                 // finished at diisi ditambahkan 100 menit dari waktu sekarang
                 'finished_at' => now()->addMinutes(100),
                 'created_by' => $user->id,
+                'status_pengerjaan' => 'sedang dikerjakan',
+                'status' => 1,
             ]);
 
             // Mengambil semua pertanyaan dalam paket tryout
@@ -164,8 +177,15 @@ class TryOutController extends Controller
             }
 
             DB::commit();
+            // tambahkan variabel next dari id tryout details yang pertama untuk navigasi soal spertama
+            $tryout->next = $tryout->tryout_details->first()->id;
 
-            return ResponseFormatter::success($tryout, 'Tryout berhasil dimulai');
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tryout berhasil dimulai',
+                'data' => $tryout,
+                'next' => $tryout->next
+            ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
             return ResponseFormatter::error($e->getMessage(), 'Tryout gagal dimulai', 500);
@@ -185,11 +205,20 @@ class TryOutController extends Controller
                 $detail->question_number = $index + 1;
                 $detail->prev_question = $index > 0 ? $tryoutDetails[$index - 1]->course_question_id : null;
                 $detail->next_question = $index < ($tryoutDetails->count() - 1) ? $tryoutDetails[$index + 1]->course_question_id : null;
+                // hidden updated_by, created_at, updated_at
+                $detail->makeHidden('updated_by', 'created_at', 'updated_at');
             }
         } else {
             // Jika $tryoutDetails null atau kosong, beri pesan yang sesuai
             return ResponseFormatter::error(null, 'No tryout details found', 404);
         }
+
+        // exclude score from answer from tryout details
+        $tryoutDetails->makeHidden('score', 'updated_by', 'created_at', 'updated_at');
+
+        // total answered questions
+        $answeredQuestions = $tryoutDetails->whereNotNull('answer')->count();
+        $unansweredQuestions = $tryoutDetails->whereNull('answer')->count();
 
         $data = [
             'tryout_id' => $tryout->id,
@@ -198,6 +227,8 @@ class TryOutController extends Controller
             'started_at' => $tryout->started_at,
             'finished_at' => $tryout->finished_at,
             'total_questions' => $tryoutDetails->count(),
+            'answered_questions' => $answeredQuestions,
+            'unanswered_questions' => $unansweredQuestions,
             'tryout_details' => $tryoutDetails,
         ];
 
@@ -225,31 +256,48 @@ class TryOutController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($tryoutId, $questionNumber)
+    public function show($questionId)
     {
         try {
             // Mengambil detail tryout beserta daftar soal dan jawaban
-            $tryout = Tryout::with(['tryout_details.courseQuestion' => function ($query) {
-                $query->with(['answers:id,course_question_id,answer']);
-            }])->findOrFail($tryoutId);
+            $tryoutDetail = TryoutDetail::with(['courseQuestion.answers'])
+                ->findOrFail($questionId);
 
-            // Mencari detail dari soal yang diminta
-            $questionDetail = $tryout->tryout_details->where('course_question_id', $questionNumber)->first();
-
-            // Jika nomor soal tidak ditemukan
-            if (!$questionDetail) {
-                return ResponseFormatter::error(null, 'Nomor soal tidak ditemukan', 404);
+            // Jika detail tryout tidak ditemukan
+            if (!$tryoutDetail) {
+                return ResponseFormatter::error(null, 'Data tryout tidak ditemukan', 404);
             }
+
+            // mengolah data image
+            if ($tryoutDetail->courseQuestion->image) {
+                $tryoutDetail->courseQuestion->image = asset('storage/' . $tryoutDetail->courseQuestion->image);
+            }
+
+            // select data tryout detail->courseQuestion->answers
+            $tryoutDetail->courseQuestion->answers->makeHidden(['score', 'created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at', 'deleted_by']);
+
+            // total answered questions
+            $answeredQuestions = $tryoutDetail->whereNotNull('answer')->count();
+            $unansweredQuestions = $tryoutDetail->whereNull('answer')->count();
+            $totalQuestions = $tryoutDetail->count();
+
+            // next question
+            $nextTryoutDetail = TryoutDetail::where('id', '>', $tryoutDetail->id)->first();
 
             // Menyiapkan data yang akan dikembalikan
             $questionData = [
-                'id' => $questionDetail->id, // Nomor detail soal
-                'tryout_id' => $tryout->id, // Nomor tryout
-                'question_number' => $questionDetail->id, // Nomor soal
-                'course_question_id' => $questionDetail->courseQuestion->id, // Nomor soal
-                'question' => $questionDetail->courseQuestion->question, // Pertanyaan
-                'image' => $questionDetail->courseQuestion->image, // Gambar pertanyaan
-                'answers' => $questionDetail->courseQuestion->answers
+                'id' => $tryoutDetail->id, // Nomor detail soal
+                'tryout_id' => $tryoutDetail->tryout_id, // Nomor tryout
+                'question_number' => $tryoutDetail->id, // Nomor soal
+                'course_question_id' => $tryoutDetail->course_question_id, // Nomor soal
+                'question' => $tryoutDetail->courseQuestion->question, // Pertanyaan
+                'image' => $tryoutDetail->courseQuestion->image, // Gambar pertanyaan
+                'course_answer_id' => $tryoutDetail->course_answer_id,
+                'next' => $nextTryoutDetail ? $nextTryoutDetail->id : null,
+                'answered_questions' => $answeredQuestions,
+                'unanswered_questions' => $unansweredQuestions,
+                'total_questions' => $totalQuestions,
+                'answers' => $tryoutDetail->courseQuestion->answers,
             ];
 
             return ResponseFormatter::success($questionData, 'Data soal berhasil diambil');
@@ -258,7 +306,90 @@ class TryOutController extends Controller
         }
     }
 
-    public function answerQuestion(Request $request, $tryoutId, $questionId)
+    // public function showoldmethod($tryoutId, $questionNumber)
+    // {
+    //     try {
+    //         // Mengambil detail tryout beserta daftar soal dan jawaban
+    //         $tryout = Tryout::with(['tryout_details.courseQuestion' => function ($query) {
+    //             $query->with(['answers:id,course_question_id,answer']);
+    //         }])->findOrFail($tryoutId);
+
+    //         // Mencari detail dari soal yang diminta
+    //         $questionDetail = $tryout->tryout_details->where('course_question_id', $questionNumber)->first();
+
+    //         // Jika nomor soal tidak ditemukan
+    //         if (!$questionDetail) {
+    //             return ResponseFormatter::error(null, 'Nomor soal tidak ditemukan', 404);
+    //         }
+
+    //         // Menyiapkan data yang akan dikembalikan
+    //         $questionData = [
+    //             'id' => $questionDetail->id, // Nomor detail soal
+    //             'tryout_id' => $tryout->id, // Nomor tryout
+    //             'question_number' => $questionDetail->id, // Nomor soal
+    //             'course_question_id' => $questionDetail->courseQuestion->id, // Nomor soal
+    //             'question' => $questionDetail->courseQuestion->question, // Pertanyaan
+    //             'image' => $questionDetail->courseQuestion->image, // Gambar pertanyaan
+    //             'answers' => $questionDetail->courseQuestion->answers
+    //         ];
+
+    //         return ResponseFormatter::success($questionData, 'Data soal berhasil diambil');
+    //     } catch (\Exception $e) {
+    //         return ResponseFormatter::error($e->getMessage(), 'Data soal gagal diambil', 500);
+    //     }
+    // }
+
+    public function answerQuestion(Request $request, $questionId)
+    {
+        $user = Auth::user();
+
+        // Cari detail tryout berdasarkan ID
+        $tryoutDetail = TryoutDetail::with('tryout')
+            ->findOrFail($questionId);
+
+        if (!$tryoutDetail) {
+            return ResponseFormatter::error(null, 'Soal tidak ditemukan dalam tryout ini', 404);
+        }
+
+        // Memastikan jawaban yang dikirim valid
+        $answerId = $request->answer_id;
+        $answer = CourseAnswer::findOrFail($answerId);
+        if (!$answer) {
+            return ResponseFormatter::error(null, 'Jawaban tidak ditemukan', 404);
+        }
+
+        $nextTryoutDetail = $tryoutDetail->where('id', '>', $tryoutDetail->id)->first();
+
+        // Jika tidak ada detail tryout berikutnya, set nilai $next menjadi null
+        $next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
+
+        // Memperbarui nilai next
+        $tryoutDetail->next = $next;
+
+        // pengecekan apakah try out sudah selesai atau belum, jika sudah selesai maka tidak bisa menjawab soal
+        // if ($tryoutDetail->tryout->finished_at < now()) {
+        //     return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
+        // }
+
+        $answerId = intval($request->answer_id);
+        $data = [
+            'answer' => $answer->answer,
+            'score' => $answer->score,
+            'updated_by' => $user->id,
+            'course_answer_id' => $answerId // Menambahkan answer_id ke dalam data yang akan disimpan/diperbarui
+        ];
+
+        // Memperbarui jawaban atau membuat jawaban baru jika belum ada
+        $tryoutDetail->updateOrCreate(
+            ['tryout_id' => $tryoutDetail->tryout_id, 'course_question_id' => $tryoutDetail->course_question_id],
+            $data
+        );
+
+        return ResponseFormatter::success($tryoutDetail, 'Jawaban berhasil disimpan');
+    }
+
+
+    public function answerQuestionOldMethod(Request $request, $tryoutId, $questionId)
     {
         $user = Auth::user();
 
@@ -280,10 +411,37 @@ class TryOutController extends Controller
         // Perbarui jawaban jika sudah ada, jika tidak, buat jawaban baru
         $tryoutDetail->updateOrCreate(
             ['tryout_id' => $tryoutId, 'course_question_id' => $questionId],
-            ['answer' => $answer->answer, 'score' => $answer->score, 'updated_by' => $user->id]
+            ['answer' => $answer->answer, 'score' => $answer->score, 'updated_by' => $user->id],
+            ['answer_id' => $answer->id]
         );
 
         return ResponseFormatter::success(null, 'Jawaban berhasil disimpan');
+    }
+
+    // function finish tryout
+    public function finishTryout($tryoutId)
+    {
+        $tryout = Tryout::findOrFail($tryoutId);
+
+        if (!$tryout) {
+            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+        }
+
+        // check apakah semua pertanyaan pada tryout sudah dijawab atau belum
+        $answeredQuestions = $tryout->tryout_details->whereNotNull('answer')->count();
+        $totalQuestions = $tryout->tryout_details->count();
+
+        if ($answeredQuestions < $totalQuestions) {
+            return ResponseFormatter::error(null, 'Masih ada soal yang belum dijawab', 400);
+        }
+
+        $tryout->update([
+            'status_pengerjaan' => 'sudah dikerjakan',
+            'status' => 2,
+            'finish_time' => now(),
+        ]);
+
+        return ResponseFormatter::success($tryout, 'Tryout berhasil selesai');
     }
 
 

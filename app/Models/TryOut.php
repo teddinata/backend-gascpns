@@ -18,6 +18,9 @@ class TryOut extends Model
         'finished_at',
         'created_by',
         'updated_by',
+        'status_pengerjaan',
+        'status',
+        'finish_time',
     ];
 
     public function user()
