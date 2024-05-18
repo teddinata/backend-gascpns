@@ -435,6 +435,11 @@ class TryOutController extends Controller
             return ResponseFormatter::error(null, 'Masih ada soal yang belum dijawab', 400);
         }
 
+        // check apakah waktu tryout sudah habis atau belum
+        if ($tryout->finished_at < now()) {
+            return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
+        }
+
         $tryout->update([
             'status_pengerjaan' => 'sudah dikerjakan',
             'status' => 2,
