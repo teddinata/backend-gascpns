@@ -102,15 +102,26 @@ class TryOutController extends Controller
 
             $tryout->current_tryout = $currentTryout;
             $tryout->next = $currentTryout->tryout_details->first()->id;
+            if ($currentTryout) {
+                $tryout->current_tryout = $currentTryout;
+                $tryout->next = $currentTryout->tryout_details->first()->id;
+                $answeredQuestions = $currentTryout->tryout_details->whereNotNull('answer')->count();
+                $unansweredQuestions = $currentTryout->tryout_details->whereNull('answer')->count();
+                $totalQuestions = $currentTryout->tryout_details->count();
+
+                $tryout->answered_questions = $answeredQuestions;
+                $tryout->unanswered_questions = $unansweredQuestions;
+                $tryout->total_questions = $totalQuestions;
+            } else {
+                $tryout->current_tryout = null;
+                $tryout->next = null;
+                $tryout->answered_questions = 0;
+                $tryout->unanswered_questions = 0;
+                $tryout->total_questions = 0;
+            }
 
             // total answered questions
-            $answeredQuestions = $currentTryout->tryout_details->whereNotNull('answer')->count();
-            $unansweredQuestions = $currentTryout->tryout_details->whereNull('answer')->count();
-            $totalQuestions = $currentTryout->tryout_details->count();
 
-            $tryout->answered_questions = $answeredQuestions;
-            $tryout->unanswered_questions = $unansweredQuestions;
-            $tryout->total_questions = $totalQuestions;
 
             foreach ($tryout->packageTryOuts as $tryoutItem) {
                 $course = $tryoutItem->course;
