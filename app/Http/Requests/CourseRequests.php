@@ -30,6 +30,7 @@ class CourseRequests extends FormRequest
             'published_at'      => ['nullable', 'date'],
             'status'            => ['nullable', 'boolean'],
             'agree_tnc'         => ['nullable', 'boolean'],
+            'passing_grade'     => ['nullable', 'integer']
         ];
     }
 }

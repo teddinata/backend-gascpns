@@ -15,6 +15,7 @@ class Course extends Model
     ];
 
     protected $fillable = [
+        'category_id',
         'name',
         'description',
         'slug',
@@ -22,7 +23,7 @@ class Course extends Model
         'published_at',
         'status',
         'agree_tnc',
-        'category_id'
+        'passing_grade'
     ];
 
     public function category()

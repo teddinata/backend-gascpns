@@ -54,6 +54,9 @@ Route::group(['prefix' => 'v1'], function () {
         // endpoint finish tryout
         Route::post('/tryout/{tryoutId}/finish', [TryOutController::class, 'finishTryout']);
 
+        // endpoint summary
+        Route::get('/tryout/{tryoutId}/summary', [TryOutController::class, 'summary']);
+
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
         //     ->middleware('auth:sanctum')
         //     ->name('tryout.answer');

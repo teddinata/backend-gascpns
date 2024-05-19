@@ -460,6 +460,43 @@ class TryOutController extends Controller
         return ResponseFormatter::success($tryout, 'Tryout berhasil selesai');
     }
 
+    // show student summary tryout
+    public function summary($tryoutId)
+    {
+        $tryout = Tryout::where('status', 2)
+                ->with('tryout_details.courseQuestion')->findOrFail($tryoutId);
+
+        if (!$tryout) {
+            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+        }
+
+        $answeredQuestions = $tryout->tryout_details->whereNotNull('answer')->count();
+        $unansweredQuestions = $tryout->tryout_details->whereNull('answer')->count();
+        $totalQuestions = $tryout->tryout_details->count();
+
+        // hitung score total
+        $totalScore = $tryout->tryout_details->sum('score');
+        // hitung maximum score dari kolom score yang bernilai 5 dikali jumlah soal
+        $maxScore = $totalQuestions * 5;
+
+
+        $data = [
+            'tryout_id' => $tryout->id,
+            'user_id' => $tryout->user_id,
+            'package_id' => $tryout->package_id,
+            'started_at' => $tryout->started_at,
+            'finished_at' => $tryout->finished_at,
+            'total_questions' => $totalQuestions,
+            'total_score' => $totalScore,
+            'max_score' => $maxScore,
+            'answered_questions' => $answeredQuestions,
+            'unanswered_questions' => $unansweredQuestions,
+            'tryout_details' => $tryout->tryout_details,
+        ];
+
+        return ResponseFormatter::success($data, 'Data ringkasan tryout berhasil diambil');
+    }
+
 
     /**
      * Show the form for editing the specified resource.

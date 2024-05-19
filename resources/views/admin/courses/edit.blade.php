@@ -191,6 +191,19 @@
     </div> --}}
 
     <div class="flex flex-col gap-[10px]">
+        <p class="font-semibold">Passing Grade</p>
+        <div class="flex items-center w-[500px] h-[52px] p-[14px_16px] rounded-full border border-[#EEEEEE] transition-all duration-300 focus-within:border-2 focus-within:border-[#0A090B]">
+            <div class="mr-[14px] w-6 h-6 flex items-center justify-center overflow-hidden">
+                <img src="{{ asset('images/icons/note-favorite-outline.svg') }}" class="w-full h-full object-contain" alt="icon">
+            </div>
+            <input type="number"
+                class="font-semibold placeholder:text-[#7F8190] placeholder:font-normal w-full outline-none"
+                placeholder="Passing Grade" name="passing_grade" required
+                value="{{ $course->passing_grade }}">
+        </div>
+    </div>
+
+    <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Status</p>
         <div class="flex items-center gap-5">
             <label for="toggle" class="flex items-center gap-[10px]">
