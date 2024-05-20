@@ -100,8 +100,8 @@ class TryOutController extends Controller
                 ->with('tryout_details')
                 ->first();
 
-            $tryout->current_tryout = $currentTryout;
-            $tryout->next = $currentTryout->tryout_details->first()->id;
+            // $tryout->current_tryout = $currentTryout;
+            // $tryout->next = $currentTryout->tryout_details->first()->id;
             if ($currentTryout) {
                 $tryout->current_tryout = $currentTryout;
                 $tryout->next = $currentTryout->tryout_details->first()->id;
@@ -225,7 +225,7 @@ class TryOutController extends Controller
         }
 
         // exclude score from answer from tryout details
-        $tryoutDetails->makeHidden('score', 'updated_by', 'created_at', 'updated_at');
+        $tryoutDetails->makeHidden('updated_by', 'created_at', 'updated_at');
 
         // total answered questions
         $answeredQuestions = $tryoutDetails->whereNotNull('answer')->count();
@@ -270,8 +270,11 @@ class TryOutController extends Controller
     public function show($questionId)
     {
         try {
+            // mengambil tryoutId dari questionId
+            $tryoutId = TryoutDetail::where('id', $questionId)->first()->tryout_id;
             // Mengambil detail tryout beserta daftar soal dan jawaban
             $tryoutDetail = TryoutDetail::with(['courseQuestion.answers'])
+                ->where('tryout_id', $tryoutId)
                 ->findOrFail($questionId);
 
             // Jika detail tryout tidak ditemukan
@@ -288,9 +291,9 @@ class TryOutController extends Controller
             $tryoutDetail->courseQuestion->answers->makeHidden(['score', 'created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at', 'deleted_by']);
 
             // total answered questions
-            $answeredQuestions = $tryoutDetail->whereNotNull('answer')->count();
-            $unansweredQuestions = $tryoutDetail->whereNull('answer')->count();
-            $totalQuestions = $tryoutDetail->count();
+            $answeredQuestions = $tryoutDetail->whereNotNull('answer')->where('tryout_id', $tryoutId)->count();
+            $unansweredQuestions = $tryoutDetail->whereNull('answer')->where('tryout_id', $tryoutId)->count();
+            $totalQuestions = $tryoutDetail->where('tryout_id', $tryoutId)->count();
 
             // next question
             $nextTryoutDetail = TryoutDetail::where('id', '>', $tryoutDetail->id)->first();
@@ -464,7 +467,28 @@ class TryOutController extends Controller
     public function summary($tryoutId)
     {
         $tryout = Tryout::where('status', 2)
-                ->with('tryout_details.courseQuestion')->findOrFail($tryoutId);
+                ->with(['tryout_details.courseQuestion.course', 'package'])
+                ->findOrFail($tryoutId);
+
+        $passingGrade = $tryout->tryout_details->first()->courseQuestion->course->passing_grade;
+
+        $categories = $tryout->tryout_details->map(function ($detail) {
+            return (object) [
+                'id' => $detail->courseQuestion->course->category->id,
+                'name' => $detail->courseQuestion->course->category->name,
+                'passing_grade' => $detail->courseQuestion->course->passing_grade,
+                // hitung score yang diperoleh siswa pada kategori soal
+                // Add other properties as needed
+            ];
+        })->unique()->values()->toArray();
+
+        // hitung score berdasarkan kategori soal
+        foreach ($categories as $category) {
+            $category->score = $tryout->tryout_details->where('courseQuestion.course.category_id', $category->id)->sum('score');
+        }
+
+        // next try out
+        $tryout->next = $tryout->tryout_details->first()->id;
 
         if (!$tryout) {
             return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
@@ -486,15 +510,90 @@ class TryOutController extends Controller
             'package_id' => $tryout->package_id,
             'started_at' => $tryout->started_at,
             'finished_at' => $tryout->finished_at,
+            'finish_time' => $tryout->finish_time,
             'total_questions' => $totalQuestions,
             'total_score' => $totalScore,
             'max_score' => $maxScore,
             'answered_questions' => $answeredQuestions,
             'unanswered_questions' => $unansweredQuestions,
+            'next' => $tryout->next,
+            'categories' => $categories,
+            'package' => $tryout->package,
             'tryout_details' => $tryout->tryout_details,
         ];
 
         return ResponseFormatter::success($data, 'Data ringkasan tryout berhasil diambil');
+    }
+
+    public function showSummary($questionId)
+    {
+        try {
+            // mengambil tryoutId dari questionId
+            $tryoutId = Tryout::where('status', 2)
+                ->with(['tryout_details.courseQuestion.course', 'package'])
+                ->whereHas('tryout_details', function ($query) use ($questionId) {
+                    $query->where('id', $questionId);
+                })
+                ->first()->id;
+            // Mengambil detail tryout beserta daftar soal dan jawaban
+            $tryoutDetail = TryoutDetail::with(['courseQuestion','courseQuestion.answers'])
+                ->where('tryout_id', $tryoutId)
+                ->findOrFail($questionId);
+            // dd($tryoutDetail);
+
+            // Jika detail tryout tidak ditemukan
+            if (!$tryoutDetail) {
+                return ResponseFormatter::error(null, 'Data tryout tidak ditemukan', 404);
+            }
+
+            // mengolah data image
+            if ($tryoutDetail->courseQuestion->image) {
+                $tryoutDetail->courseQuestion->image = asset('storage/' . $tryoutDetail->courseQuestion->image);
+            }
+
+            // select data tryout detail->courseQuestion->answers
+            $tryoutDetail->courseQuestion->answers->makeHidden(['created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at', 'deleted_by']);
+
+            // total answered questions
+            $answeredQuestions = $tryoutDetail->whereNotNull('answer')->where('tryout_id', $tryoutId)->count();
+            $unansweredQuestions = $tryoutDetail->whereNull('answer')->where('tryout_id', $tryoutId)->count();
+            $totalQuestions = $tryoutDetail->where('tryout_id', $tryoutId)->count();
+
+            // count is correct answer use score === 5
+            $correctAnswers = $tryoutDetail->where('score', 5)->where('tryout_id', $tryoutId)->count();
+            // false answer use score 1, 2, 3, 4;
+            $falseAnswers = $tryoutDetail->where('score', '!=', 5)->where('tryout_id', $tryoutId)->count();
+            // blank answer
+            $blankAnswers = $tryoutDetail->whereNull('answer')->where('tryout_id', $tryoutId)->count();
+
+            // next question
+            $nextTryoutDetail = TryoutDetail::where('id', '>', $tryoutDetail->id)->first();
+
+            // Menyiapkan data yang akan dikembalikan
+            $questionData = [
+                'id' => $tryoutDetail->id, // Nomor detail soal
+                'tryout_id' => $tryoutDetail->tryout_id, // Nomor tryout
+                'question_number' => $tryoutDetail->id, // Nomor soal
+                'course_question_id' => $tryoutDetail->course_question_id, // Nomor soal
+                'question' => $tryoutDetail->courseQuestion->question, // Pertanyaan
+                'image' => $tryoutDetail->courseQuestion->image, // Gambar pertanyaan
+                'course_answer_id' => $tryoutDetail->course_answer_id,
+                'next' => $nextTryoutDetail ? $nextTryoutDetail->id : null,
+                'answered_questions' => $answeredQuestions,
+                'unanswered_questions' => $unansweredQuestions,
+                'total_questions' => $totalQuestions,
+                'is_correct' => $correctAnswers,
+                'is_false' => $falseAnswers,
+                'is_blank' => $blankAnswers,
+                'question_category' => $tryoutDetail->courseQuestion->course->category->name,
+                'questions' => $tryoutDetail->courseQuestion->makeHidden(['answers', 'course']),
+                'answers' => $tryoutDetail->courseQuestion->answers,
+            ];
+
+            return ResponseFormatter::success($questionData, 'Data soal berhasil diambil');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 'Data soal gagal diambil', 500);
+        }
     }
 
 
