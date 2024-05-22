@@ -100,4 +100,9 @@ class Package extends Model
     {
         return $this->belongsTo(User::class, 'deleted_by', 'id');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'package_id', 'id');
+    }
 }

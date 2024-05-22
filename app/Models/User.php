@@ -129,4 +129,11 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'referred_by');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'student_id', 'id');
+    }
+
+
 }

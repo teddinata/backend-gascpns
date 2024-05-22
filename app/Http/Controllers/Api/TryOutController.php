@@ -357,6 +357,67 @@ class TryOutController extends Controller
     {
         $user = Auth::user();
 
+        try {
+            // Mulai transaksi database
+            DB::beginTransaction();
+
+            // Cari detail tryout berdasarkan ID
+            $tryoutDetail = TryoutDetail::with('tryout')
+                ->findOrFail($questionId);
+
+            if (!$tryoutDetail) {
+                return ResponseFormatter::error(null, 'Soal tidak ditemukan dalam tryout ini', 404);
+            }
+
+            // Memastikan jawaban yang dikirim valid
+            $answerId = $request->answer_id;
+            $answer = CourseAnswer::findOrFail($answerId);
+            if (!$answer) {
+                return ResponseFormatter::error(null, 'Jawaban tidak ditemukan', 404);
+            }
+
+            $nextTryoutDetail = $tryoutDetail->where('id', '>', $tryoutDetail->id)->first();
+
+            // Jika tidak ada detail tryout berikutnya, set nilai $next menjadi null
+            $next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
+
+            // Memperbarui nilai next
+            $tryoutDetail->next = $next;
+
+            // pengecekan apakah try out sudah selesai atau belum, jika sudah selesai maka tidak bisa menjawab soal
+            if ($tryoutDetail->tryout->finished_at < now()) {
+                return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
+            }
+
+            $answerId = intval($request->answer_id);
+            $data = [
+                'answer' => $answer->answer,
+                'score' => $answer->score,
+                'updated_by' => $user->id,
+                'course_answer_id' => $answerId // Menambahkan answer_id ke dalam data yang akan disimpan/diperbarui
+            ];
+
+            // Memperbarui jawaban atau membuat jawaban baru jika belum ada
+            $tryoutDetail->updateOrCreate(
+                ['tryout_id' => $tryoutDetail->tryout_id, 'course_question_id' => $tryoutDetail->course_question_id],
+                $data
+            );
+
+            // Commit transaksi database jika tidak ada kesalahan
+            DB::commit();
+
+            return ResponseFormatter::success($tryoutDetail, 'Jawaban berhasil disimpan');
+        } catch (\Exception $e) {
+            // Rollback transaksi database jika terjadi kesalahan
+            DB::rollback();
+            return ResponseFormatter::error(null, 'Terjadi kesalahan saat memproses jawaban', 500);
+        }
+    }
+
+    public function answerQuestionWithoutDB(Request $request, $questionId)
+    {
+        $user = Auth::user();
+
         // Cari detail tryout berdasarkan ID
         $tryoutDetail = TryoutDetail::with('tryout')
             ->findOrFail($questionId);
@@ -432,8 +493,49 @@ class TryOutController extends Controller
         return ResponseFormatter::success(null, 'Jawaban berhasil disimpan');
     }
 
-    // function finish tryout
     public function finishTryout($tryoutId)
+    {
+        try {
+            // Mulai transaksi database
+            DB::beginTransaction();
+
+            $tryout = Tryout::findOrFail($tryoutId);
+
+            if (!$tryout) {
+                return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+            }
+
+            // check apakah semua pertanyaan pada tryout sudah dijawab atau belum
+            $answeredQuestions = $tryout->tryout_details->whereNotNull('answer')->count();
+            $totalQuestions = $tryout->tryout_details->count();
+
+            if ($answeredQuestions < $totalQuestions) {
+                return ResponseFormatter::error(null, 'Masih ada soal yang belum dijawab', 400);
+            }
+
+            // check apakah waktu tryout sudah habis atau belum
+            if ($tryout->finished_at < now()) {
+                return ResponseFormatter::error(null, 'Waktu tryout sudah habis', 400);
+            }
+
+            $tryout->update([
+                'status_pengerjaan' => 'sudah dikerjakan',
+                'status' => 2,
+                'finish_time' => now(),
+            ]);
+
+            // Commit transaksi database jika tidak ada kesalahan
+            DB::commit();
+
+            return ResponseFormatter::success($tryout, 'Tryout berhasil selesai');
+        } catch (\Exception $e) {
+            // Rollback transaksi database jika terjadi kesalahan
+            DB::rollback();
+            return ResponseFormatter::error(null, 'Terjadi kesalahan saat menyelesaikan tryout', 500);
+        }
+    }
+    // function finish tryout
+    public function finishTryoutWithoutDB($tryoutId)
     {
         $tryout = Tryout::findOrFail($tryoutId);
 

@@ -3,7 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\EWalletPaymentController;
+use App\Http\Controllers\Api\QrisPaymentController;
 use App\Http\Controllers\Api\TryOutController;
+use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\VirtualAccountPaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,7 +24,13 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+Route::post('/tryout/transactions/va-payment/callback', [VirtualAccountPaymentController::class, 'vaCallback']);
+Route::post('/tryout/transactions/qris/callback', [QrisPaymentController::class, 'qrisCallback']);
+Route::post('/tryout/transactions/ewallet/callback', [EWalletPaymentController::class, 'ewalletCallback']);
+
 Route::group(['prefix' => 'v1'], function () {
+
+
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -59,6 +69,18 @@ Route::group(['prefix' => 'v1'], function () {
 
         // summary show
         Route::get('/tryout/summary/{questionId}', [TryOutController::class, 'showSummary']);
+
+        // endpoint transactions
+        Route::post('/tryout/transactions/store', [TransactionController::class, 'store']);
+
+        // payment
+        Route::post('/tryout/transactions/va-payment', [VirtualAccountPaymentController::class, 'vaTransaction']);
+
+        // ewallet
+        Route::post('/tryout/transactions/ewallet', [EWalletPaymentController::class, 'ewalletTransaction']);
+
+        // qris
+        Route::post('/tryout/transactions/qris', [QrisPaymentController::class, 'qrisTransaction']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
