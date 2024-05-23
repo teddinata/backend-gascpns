@@ -154,6 +154,17 @@ class TryOutController extends Controller
         return ResponseFormatter::success($tryout, 'Data paket tryout berhasil diambil');
     }
 
+    // show by slug
+    public function showBySlug($slug)
+    {
+        $user = Auth::user();
+
+        // Ambil data paket tryout
+        $tryout = Package::where('slug', $slug)->first();
+
+        return ResponseFormatter::success($tryout, 'Data paket tryout berhasil diambil');
+    }
+
     public function startTryout($packageId)
     {
         $user = auth()->user();

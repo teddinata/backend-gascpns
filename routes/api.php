@@ -55,7 +55,8 @@ Route::group(['prefix' => 'v1'], function () {
         Route::apiResource('tryout', TryOutController::class);
 
         // show detail package
-        Route::get('/package/{packageId}', [TryOutController::class, 'showDetail']);
+        // Route::get('/package/{packageId}', [TryOutController::class, 'showDetail']);
+        Route::get('/package/{slug}', [TryOutController::class, 'showBySlug']);
 
         // route for start tryout
         Route::post('tryout/{packageId}/start', [TryOutController::class, 'startTryout']);
