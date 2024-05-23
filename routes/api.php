@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\QrisPaymentController;
 use App\Http\Controllers\Api\TryOutController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\VirtualAccountPaymentController;
+use App\Http\Controllers\Api\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,11 @@ Route::get('/user', function (Request $request) {
 Route::post('/tryout/transactions/va-payment/callback', [VirtualAccountPaymentController::class, 'vaCallback']);
 Route::post('/tryout/transactions/qris/callback', [QrisPaymentController::class, 'qrisCallback']);
 Route::post('/tryout/transactions/ewallet/callback', [EWalletPaymentController::class, 'ewalletCallback']);
+
+// payment methdods
+Route::get('/banks', [PaymentController::class, 'getAvailableBanks']);
+Route::get('/ewallets', [PaymentController::class, 'getAvailableEWallets']);
+Route::get('/payment-instructions/{bank}', [PaymentController::class, 'getPaymentInstructions']);
 
 Route::group(['prefix' => 'v1'], function () {
 
