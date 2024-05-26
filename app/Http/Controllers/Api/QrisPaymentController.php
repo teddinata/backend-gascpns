@@ -84,7 +84,7 @@ class QrisPaymentController extends Controller
             abort(403);
         }
 
-        $transaction = Transaction::where('payment_token', $request->external_id)->get();
+        $transaction = Transaction::where('payment_token', $request->data['qr_id'])->get();
 
         foreach ($transaction as $trx) {
             $trx->payment_status = "PAID";
@@ -99,5 +99,16 @@ class QrisPaymentController extends Controller
             // Lakukan aksi sesuai kebutuhan Anda
             $student->packages()->attach($package->id, ['created_by' => '1']);
         }
+        // $transaction->payment_status = "PAID";
+        // $transaction->payment_response = json_encode($request->all());
+        // $transaction->payment_date = now();
+        // $transaction->save();
+
+        // // Dapatkan pengguna dan paket yang terkait dengan transaksi
+        // $student = $transaction->student;
+        // $package = $transaction->package;
+
+        // // Lakukan aksi sesuai kebutuhan Anda
+        // $student->packages()->attach($package->id, ['created_by' => '1']);
     }
 }
