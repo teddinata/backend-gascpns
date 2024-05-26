@@ -17,6 +17,7 @@ class TransactionDetail extends Model
         'package_price',
         'quantity',
         'price',
+        'original_price',
     ];
 
     public function transaction()

@@ -53,6 +53,10 @@ class VirtualAccountPaymentController extends Controller
                 $xenditResponse = $xenditService->createVa($vaPayloads);
                 // dd($xenditResponse);
 
+                // get image from banks table
+                $bank = DB::table('banks')->where('code', $request->bank_code)->first();
+
+
 
             if (!$xenditResponse || !isset($xenditResponse['status'])) {
                 throw new \Exception('Invalid Xendit response');
@@ -65,6 +69,9 @@ class VirtualAccountPaymentController extends Controller
             $transaction->payment_timer = 3600; // 1 jam
             $transaction->payment_id = $xenditResponse['external_id'];
             $transaction->payment_number = $xenditResponse['account_number'];
+            $transaction->payment_channel = $request->payment_method;
+            $transaction->payment_image = $bank->logo;
+            $transaction->payment_status = 'UNPAID';
             $transaction->save();
 
             $responseData = [
@@ -100,30 +107,30 @@ class VirtualAccountPaymentController extends Controller
             abort(404, 'Transaction not found');
         }
 
-        foreach ($transaction as $trx) {
-            $trx->payment_status = "PAID";
-            $trx->payment_response = json_encode($request->all());
-            $trx->payment_date = now();
-            $trx->save();
+        // foreach ($transaction as $trx) {
+        //     $trx->payment_status = "PAID";
+        //     $trx->payment_response = json_encode($request->all());
+        //     $trx->payment_date = now();
+        //     $trx->save();
 
-            // Dapatkan pengguna dan paket yang terkait dengan transaksi
-            $student = $trx->student;
-            $package = $trx->package;
+        //     // Dapatkan pengguna dan paket yang terkait dengan transaksi
+        //     $student = $trx->student;
+        //     $package = $trx->package;
 
-            // beri user akses]
-            $student->packages()->attach($package->id, ['created_by' => '1 ']);
-        }
+        //     // beri user akses]
+        //     $student->packages()->attach($package->id, ['created_by' => '1 ']);
+        // }
 
-        // $transaction->payment_status = "PAID";
-        // $transaction->payment_response = json_encode($request->all());
-        // $transaction->payment_date = now();
-        // $transaction->save();
+        $transaction->payment_status = "PAID";
+        $transaction->payment_response = json_encode($request->all());
+        $transaction->payment_date = now();
+        $transaction->save();
 
-        // // Dapatkan pengguna dan paket yang terkait dengan transaksi
-        // $student = $transaction->student;
-        // $package = $transaction->package;
+        // Dapatkan pengguna dan paket yang terkait dengan transaksi
+        $student = $transaction->student;
+        $package = $transaction->package;
 
-        // // beri user akses
-        // $student->packages()->attach($package->id, ['created_by' => '1 ']);
+        // beri user akses
+        $student->packages()->attach($package->id, ['created_by' => '1 ']);
     }
 }

@@ -56,6 +56,8 @@ class QrisPaymentController extends Controller
             $transaction->payment_timer = 3600; // 1 jam
             $transaction->payment_id = $xenditResponse['reference_id'];
             $transaction->payment_number = $xenditResponse['qr_string'];
+            $transaction->payment_status = 'UNPAID';
+            $transaction->payment_channel = 'QRIS';
             $transaction->save();
 
             $responseData = [

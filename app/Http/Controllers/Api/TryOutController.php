@@ -162,6 +162,19 @@ class TryOutController extends Controller
         // Ambil data paket tryout
         $tryout = Package::where('slug', $slug)->first();
 
+        // if package have image
+        if ($tryout->cover_path) {
+            $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+        }
+
+        if ($tryout->thumbnail_path) {
+            $tryout->thumbnail_path = asset('storage/' . $tryout->thumbnail_path);
+        }
+
+        if (!$tryout) {
+            return ResponseFormatter::error(null, 'Data paket tryout tidak ditemukan', 404);
+        }
+
         return ResponseFormatter::success($tryout, 'Data paket tryout berhasil diambil');
     }
 

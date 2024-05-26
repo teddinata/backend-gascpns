@@ -13,6 +13,7 @@ class Transaction extends Model
 
     protected $fillable = [
         'invoice_code',
+        'invoice_id',
         'student_id',
         'student_id_transaction',
         'package_id',
@@ -28,6 +29,12 @@ class Transaction extends Model
         'payment_token',
         'payment_timer',
         'voucher_code',
+        'payment_image',
+        'payment_channel',
+        'payment_number',
+        'original_price',
+        'discount_price',
+
     ];
 
     public function student()
@@ -43,5 +50,10 @@ class Transaction extends Model
     public function package()
     {
         return $this->belongsTo(Package::class, 'package_id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(TransactionDetail::class, 'transaction_id');
     }
 }

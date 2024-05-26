@@ -83,6 +83,9 @@ Route::group(['prefix' => 'v1'], function () {
         // endpoint transactions
         Route::post('/tryout/transactions/store', [TransactionController::class, 'store']);
 
+        // endpoint transaction detail
+        Route::get('/tryout/transactions/{transactionId}', [TransactionController::class, 'show']);
+
         // payment
         Route::post('/tryout/transactions/va-payment', [VirtualAccountPaymentController::class, 'vaTransaction']);
 

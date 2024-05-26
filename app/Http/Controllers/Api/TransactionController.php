@@ -16,9 +16,8 @@ use Illuminate\Support\Str;
 use App\Models\User;
 use Exception;
 use Xendit\QRCode;
-
-
-use Illuminate\Support\Carbon;
+// use Illuminate\Support\Carbon;
+use Carbon\Carbon;
 use PSpell\Config;
 
 class TransactionController extends Controller
@@ -84,6 +83,10 @@ class TransactionController extends Controller
         // Menggabungkan semua komponen untuk membuat invoice code
         $invoiceCode = 'GAS-' . $date . $randomString;
 
+        // invoice id GAS2024052600001
+        // generate random number
+        $invoiceId = 'GAS' . date('Ymd') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+
         // check user available menggunakan email
         $student = User::where('email', $request->email)->first();
 
@@ -125,11 +128,14 @@ class TransactionController extends Controller
 
             $transaction = Transaction::create([
                 'invoice_code'              => $invoiceCode,
+                'invoice_id'                => $invoiceId,
                 'package_id'                => $package->id,
                 'student_id'                => $student->id,
                 'student_id_transaction'    => $student_id_transaction, // 'student_id_transaction' => $request->student_id_transaction,
                 'quantity'                  => $request->quantity,
                 'total_amount'              => $fixedPrice * $request->quantity,
+                'original_price'            => $package->price,
+                'discount_price'            => $package->discount ?? 0,
                 'payment_status'            => 'PENDING',
             ]);
 
@@ -178,6 +184,34 @@ class TransactionController extends Controller
             DB::rollBack();
             return ResponseFormatter::error($e->getMessage(), 'Transaction Failed');
         }
+    }
+
+    // show transaction detail by id
+    public function show(string $id)
+    {
+        $transaction = Transaction::with('details', 'package')->find($id);
+
+        // if image found in package
+        if ($transaction->package->cover_path) {
+            $transaction->package->cover_path = asset('storage/' . $transaction->package->cover_path);
+        }
+
+        $paymentExpired = Carbon::parse($transaction->payment_expired)->setTimezone('UTC');
+        $currentTime = Carbon::now('UTC');
+
+        // check jika ada payment expired yang sudah lewat dari waktu sekarang maka ubah status menjadi EXPIRED
+        if ($currentTime->gt($paymentExpired)) {
+            $transaction->payment_status = 'EXPIRED';
+            $transaction->save();
+        }
+
+        if (!$transaction) {
+            return ResponseFormatter::error([
+                'message' => 'Transaction not found',
+            ], 'Transaction not found', 404);
+        }
+
+        return ResponseFormatter::success($transaction, 'Transaction detail');
     }
 
 

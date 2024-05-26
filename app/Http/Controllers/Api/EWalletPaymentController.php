@@ -22,8 +22,11 @@ class EWalletPaymentController extends Controller
         $validator = Validator::make($request->all(), [
             'transaction_id' => 'required|exists:transactions,id',
             'payment_method' => 'required|in:EWALLET',
-            'ewallet' => 'required|in:OVO,DANA,LinkAja',
+            // 'ewallet' => 'required|in:OVO,DANA,LinkAja',
+            // 'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA|url',
+            'ewallet_type' => 'required|in:DANA,OVO,LINKAJA',
             'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA|url',
+            'mobile_number' => 'required_if:ewallet_type,OVO'
         ]);
 
         if ($validator->fails()) {
@@ -33,7 +36,7 @@ class EWalletPaymentController extends Controller
         $transaction = Transaction::findOrFail($request->transaction_id);
 
         // Tentukan channel_code berdasarkan E-wallet yang dipilih oleh pengguna
-        $ewalletType = $request->input('ewallet');
+        $ewalletType = $request->input('ewallet_type');
         $channelCode = '';
         $channelProperties = [];
 
@@ -99,6 +102,9 @@ class EWalletPaymentController extends Controller
             $xenditResponse = $xenditService->createEWallet($ewalletPayloads);
             // dd($xenditResponse);
 
+            // get image from available_ewallets table
+            $ewallet = DB::table('ewallets')->where('code', $ewalletType)->first();
+
             if (!$xenditResponse || !isset($xenditResponse['status'])) {
                 throw new \Exception('Invalid Xendit response');
             }
@@ -110,11 +116,14 @@ class EWalletPaymentController extends Controller
             $transaction->payment_timer = 3600; // 1 jam
             $transaction->payment_id = $xenditResponse['reference_id'];
             $transaction->payment_channel = $channelCode;
-            $transaction->payment_number = $xenditResponse['actions'][0]['url'] ?? $xenditResponse['actions']['mobile_web_checkout_url'];
+            $transaction->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
+            $transaction->payment_image = $ewallet->logo;
+            $transaction->payment_status = 'UNPAID';
             $transaction->save();
 
             $responseData = [
                 'transaction_id' => $transaction->id,
+                'payment_response' => $xenditResponse
             ];
 
             $responseData['payment_response'] = $xenditResponse;
@@ -132,14 +141,15 @@ class EWalletPaymentController extends Controller
      * Callback for Xendit E-Wallet payment.
      */
 
-     public function ewalletCallback(Request $request): void
+     public function ewalletCallback(Request $request)
      {
          if ($request->header("x-callback-token") != env("CALLBACK_XENDIT_TOKEN")) {
              abort(403);
          }
 
          if($request->event == "ewallet.capture") {
-             $transaction = Transaction::where('payment_token', $request->reference_id)->get();
+             $transaction = Transaction::where('payment_token', $request->data['id'])->get();
+            //  $transaction = Transaction::where('payment_id', $request->reference_id)->get();
 
              foreach ($transaction as $trx) {
                 $trx->payment_status = "PAID";
