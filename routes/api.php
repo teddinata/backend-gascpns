@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\TryOutController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\VirtualAccountPaymentController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\RetailOutletPaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +95,9 @@ Route::group(['prefix' => 'v1'], function () {
 
         // qris
         Route::post('/tryout/transactions/qris', [QrisPaymentController::class, 'qrisTransaction']);
+
+        // retail outlet
+        Route::post('/tryout/transactions/retail-outlet', [RetailOutletPaymentController::class, 'retailOutletTransaction']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])

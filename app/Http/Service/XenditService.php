@@ -63,6 +63,20 @@ class XenditService
         return $response;
     }
 
+    // create alfamart retail outlet payment
+    public function createRetailOutlet($data): array
+    {
+        $response = [];
+        try {
+            $response = \Xendit\Retail::create($data);
+            // $response = Retail::createReqParams($data);
+        } catch (\Exception $exception) {
+            $response["message"] = $exception->getMessage();
+        }
+        return $response;
+    }
+
+
     // create Credit Card
     // public function createCreditCard($data): array
     // {

@@ -44,7 +44,7 @@ class VirtualAccountPaymentController extends Controller
             $vaPayloads = [
                 "external_id" => "fixed-va-" . now()->timestamp,
                 "bank_code" => $request->bank_code,
-                "name" => "Ambarrukmo " . Auth::user()->name,
+                "name" => "GASCPNS " . Auth::user()->name,
                 "is_closed" => true,
                 "expected_amount" => $transaction->total_amount,
                 "expiration_date" => (new Carbon())->addHours(1)->toIso8601String(),
