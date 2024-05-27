@@ -99,6 +99,9 @@ Route::group(['prefix' => 'v1'], function () {
         // retail outlet
         Route::post('/tryout/transactions/retail-outlet', [RetailOutletPaymentController::class, 'retailOutletTransaction']);
 
+        // endpoint payment menggunakan saldo user
+        Route::post('/tryout/transactions/saldo', [TransactionController::class, 'saldoTransaction']);
+
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
         //     ->middleware('auth:sanctum')

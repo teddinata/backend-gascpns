@@ -62,14 +62,14 @@ class VirtualAccountPaymentController extends Controller
                 throw new \Exception('Invalid Xendit response');
             }
 
-            $transaction->payment_method = "Virtual Account" . " - " . $request->bank_code;
+            $transaction->payment_method = $request->bank_code;
             $transaction->payment_response = json_encode($xenditResponse);
             $transaction->payment_token = $xenditResponse['id'];
             $transaction->payment_expired = $xenditResponse['expiration_date'];
             $transaction->payment_timer = 3600; // 1 jam
             $transaction->payment_id = $xenditResponse['external_id'];
             $transaction->payment_number = $xenditResponse['account_number'];
-            $transaction->payment_channel = $request->payment_method;
+            $transaction->payment_channel = "Virtual Account"; // "Virtual Account
             $transaction->payment_image = $bank->logo;
             $transaction->payment_status = 'UNPAID';
             $transaction->save();

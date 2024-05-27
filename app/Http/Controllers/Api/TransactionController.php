@@ -214,6 +214,76 @@ class TransactionController extends Controller
         return ResponseFormatter::success($transaction, 'Transaction detail');
     }
 
+    // transaction payment method menggunakan saldo user yang sudah login dan membeli paket tryout yang diinginkan user tersebut
+    public function transactionPayment(Request $request)
+    {
+        // validate request data
+        $validator = Validator::make($request->all(), [
+            'transaction_id' => 'required|exists:transactions,id',
+            'payment_method' => 'required|in:WALLET',
+        ]);
+
+        // check validasi request jika gagal
+        if ($validator->fails()) {
+            return ResponseFormatter::error([
+                'message' => 'Validation Error',
+                'error' => $validator->errors(),
+            ], 'Validation Error', 422);
+        }
+
+        // get transaction
+        $transaction = Transaction::findOrFail($request->transaction_id);
+
+        // check transaction
+        if (!$transaction) {
+            return ResponseFormatter::error([
+                'message' => 'Transaction not found',
+            ], 'Transaction not found', 404);
+        }
+
+        // check user
+        if ($transaction->student_id != auth()->id()) {
+            return ResponseFormatter::error([
+                'message' => 'Unauthorized',
+            ], 'Unauthorized', 401);
+        }
+
+        // check transaction status
+        if ($transaction->payment_status != 'PENDING') {
+            return ResponseFormatter::error([
+                'message' => 'Transaction already paid',
+            ], 'Transaction already paid', 422);
+        }
+
+        // check user balance
+        if (auth()->user()->balance < $transaction->total_amount) {
+            return ResponseFormatter::error([
+                'message' => 'Insufficient balance',
+            ], 'Insufficient balance', 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // update transaction
+            $transaction->payment_method = $request->payment_method;
+            $transaction->payment_status = 'PAID';
+            $transaction->save();
+
+            // update user balance
+            $user = Auth::user();
+            $user->wallet_balance -= $transaction->total_amount;
+            $user->save();
+
+            DB::commit();
+
+            return ResponseFormatter::success($transaction, 'Transaction paid successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return ResponseFormatter::error($e->getMessage(), 'Transaction payment failed');
+        }
+    }
+
 
     /**
      * Show the form for editing the specified resource.
