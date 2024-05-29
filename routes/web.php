@@ -47,6 +47,9 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('course_questions', CourseQuestionController::class)->middleware('role:teacher');
 
+        // import
+        Route::post('course_questions/{course}/import', [CourseQuestionController::class, 'import'])->name('course_questions.import');
+
         Route::get('/course/students/show/{course}', [CourseStudentController::class, 'index'])
         ->middleware('role:teacher')
         ->name('courses.course_students.index');

@@ -116,14 +116,14 @@ class CourseController extends Controller
      */
     public function show(Course $course)
     {
-        $students = $course->students()->orderBy('id', 'desc')->get();
+        // $students = $course->students()->orderBy('id', 'desc')->get();
         $questions = $course->questions()->orderBy('id', 'desc')->get();
 
         $title = 'Delete Question!';
         $text = "Are you sure you want to delete?";
         confirmDelete($title, $text);
 
-        return view('admin.courses.manage', compact('course', 'students', 'questions'));
+        return view('admin.courses.manage', compact('course', 'questions'));
     }
 
     /**

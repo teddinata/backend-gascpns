@@ -44,12 +44,14 @@
                     <div class="w-6 h-6 flex shrink-0">
                         <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold">{{ count($students) }} Students</p>
+                    {{-- <p class="font-semibold">{{ count($students) }} Students</p> --}}
                 </div>
             </div>
         </div>
     </div>
     <div class="relative">
+
+
         <a href="#" id="more-button" class="toggle-button w-[46px] h-[46px] flex shrink-0 rounded-full items-center justify-center border border-[#EEEEEE]">
             <img src="{{ asset('images/icons/more.svg') }}" alt="icon">
         </a>

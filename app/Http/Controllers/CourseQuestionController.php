@@ -6,6 +6,9 @@ use App\Models\Course;
 use App\Models\CourseQuestion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Imports\QuestionsImport;
+use Maatwebsite\Excel\Facades\Excel;
+
 
 
 class CourseQuestionController extends Controller
@@ -23,8 +26,8 @@ class CourseQuestionController extends Controller
      */
     public function create(Course $course)
     {
-        $students = $course->students()->orderBy('id', 'desc')->get();
-        return view('admin.questions.create', compact('course', 'students'));
+        // $students = $course->students()->orderBy('id', 'desc')->get();
+        return view('admin.questions.create', compact('course'));
     }
 
     /**
@@ -85,8 +88,8 @@ class CourseQuestionController extends Controller
     {
         // get the course
         $course = $courseQuestion->course;
-        $students = $course->students()->orderBy('id', 'desc')->get();
-        return view('admin.questions.edit', compact('course', 'students', 'courseQuestion'));
+        // $students = $course->students()->orderBy('id', 'desc')->get();
+        return view('admin.questions.edit', compact('course', 'courseQuestion'));
     }
 
     /**
@@ -142,6 +145,26 @@ class CourseQuestionController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Question failed to delete');
+        }
+    }
+
+    public function import(Request $request, Course $course)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx'
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $file = $request->file('file');
+            Excel::import(new QuestionsImport($course), $file);
+
+            DB::commit();
+            return redirect()->route('dashboard.courses.show', $course->id)->with('success', 'Questions imported successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to import questions.');
         }
     }
 }

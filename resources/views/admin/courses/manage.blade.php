@@ -46,7 +46,7 @@
                     <div class="w-6 h-6 flex shrink-0">
                         <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon">
                     </div>
-                    <p class="font-semibold">{{ count($students) }} Students</p>
+                    {{-- <p class="font-semibold">{{ count($students) }} Students</p> --}}
                 </div>
             </div>
         </div>
@@ -109,7 +109,27 @@
 @endif
 
 <div id="course-test" class="mx-[70px] w-[870px] mt-[30px]">
+
     <h2 class="font-bold text-2xl">Course Tests</h2>
+
+    {{-- import soal --}}
+    <div class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
+        <form action="{{ route('dashboard.course_questions.import', $course) }}" method="POST" enctype="multipart/form-data" class="flex items-center justify-center w-full">
+            @csrf
+            <label for="file" class="cursor-pointer">
+                <div class="flex items-center gap-5">
+                    <div>
+                        <i class="fas fa-file-import"></i>
+                    </div>
+                    <p class="font-bold text-xl">Import Questions</p>
+                </div>
+                <input type="file" name="file" id="file" class="hidden" onchange="updateFileName(this)">
+            </label>
+            <span id="file-name" class="ml-2 text-gray-500"></span>
+            <button type="submit" class="ml-4 bg-[#4CAF50] px-6 py-3 rounded-md text-white font-semibold hover:bg-green-600 transition-colors">Import</button>
+        </form>
+    </div>
+
     <div class="flex flex-col gap-[30px] mt-2">
         <a href="{{ route('dashboard.course.create.question', $course) }}" class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
             <div class="flex items-center gap-5">
@@ -166,6 +186,11 @@
         }
         });
     });
+
+    function updateFileName(input) {
+        const fileName = input.files[0].name;
+        document.getElementById('file-name').textContent = fileName;
+    }
 
     @if(session('success'))
         Swal.fire({
