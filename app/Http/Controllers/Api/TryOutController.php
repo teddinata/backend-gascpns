@@ -78,10 +78,13 @@ class TryOutController extends Controller
         }
 
          // Ambil semua tryout yang dimulai oleh user
-        $startedTryouts = Tryout::where('package_id', $myTryouts->pluck('id'))
+        $startedTryouts = [];
+        if (!$myTryouts->isEmpty()) {
+            $startedTryouts = Tryout::where('package_id', $myTryouts->pluck('id'))
             ->where('user_id', $user->id)
             ->pluck('package_id')
             ->toArray();
+        }
         // dd($startedTryouts);
 
         // Loop untuk memeriksa apakah user sudah memulai tryout
