@@ -9,7 +9,7 @@ use App\Helpers\ResponseFormatter;
 use App\Models\StudentAnswer;
 use App\Models\Package;
 use App\Models\PackageTryOut;
-use App\Models\Tryout;
+use App\Models\TryOut;
 use App\Models\TryoutDetail;
 use App\Models\Course;
 use App\Models\CourseQuestion;
@@ -80,7 +80,7 @@ class TryOutController extends Controller
          // Ambil semua tryout yang dimulai oleh user
         $startedTryouts = [];
         if (!$myTryouts->isEmpty()) {
-            $startedTryouts = Tryout::where('package_id', $myTryouts->pluck('id'))
+            $startedTryouts = TryOut::where('package_id', $myTryouts->pluck('id'))
             ->where('user_id', $user->id)
             ->pluck('package_id')
             ->toArray();
