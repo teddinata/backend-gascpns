@@ -14,14 +14,16 @@ use App\Models\TryoutDetail;
 use App\Models\Course;
 use App\Models\CourseQuestion;
 use App\Models\CourseAnswer;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TryOutController extends Controller
 {
     // tryout on sale without auth
     public function onSale()
     {
-        $tryouts = Package::paginate(6);
+        $tryouts = Package::where('is_premium', true)->paginate(6);
 
         foreach ($tryouts as $tryout) {
             $tryout->cover_path = asset('storage/' . $tryout->cover_path);
@@ -40,7 +42,8 @@ class TryOutController extends Controller
         }
 
         // Mengambil semua paket tryout dan menghitung jumlah user yang sudah membeli setiap paket
-        $tryouts = Package::withCount(['courseStudents as students_count'])
+        $tryouts = Package::where('is_premium', true)
+            ->withCount(['courseStudents as students_count'])
             ->paginate(6);
 
         // Olah data image dan cek apakah user telah membeli paket
@@ -69,6 +72,9 @@ class TryOutController extends Controller
 
         // Ambil semua paket tryout dari user
         $myTryouts = $user->enrolledPackageTryouts()
+            ->whereHas('packageTryOuts', function ($query) {
+                $query->where('is_premium', true);
+            })
             ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
             ->get();
 
@@ -77,15 +83,15 @@ class TryOutController extends Controller
             return ResponseFormatter::error(null, 'Kamu belum membeli paket tryout', 200);
         }
 
-         // Ambil semua tryout yang dimulai oleh user
+        // Ambil semua tryout yang dimulai oleh user
         $startedTryouts = [];
-        if (!$myTryouts->isEmpty()) {
-            $startedTryouts = TryOut::where('package_id', $myTryouts->pluck('id'))
-            ->where('user_id', $user->id)
-            ->pluck('package_id')
-            ->toArray();
+        $tryoutIds = $myTryouts->pluck('id');
+        if ($tryoutIds->isNotEmpty()) {
+            $startedTryouts = TryOut::whereIn('package_id', $tryoutIds)
+                ->where('user_id', $user->id)
+                ->pluck('package_id')
+                ->toArray();
         }
-        // dd($startedTryouts);
 
         // Loop untuk memeriksa apakah user sudah memulai tryout
         foreach ($myTryouts as $tryout) {
@@ -95,16 +101,13 @@ class TryOutController extends Controller
             $tryout->students_count = $tryout->courseStudents()->count();
 
             $tryout->is_started = in_array($tryout->id, $startedTryouts);
-            // dd($tryout->is_started);
 
-            $currentTryout = Tryout::where('user_id', $user->id)
+            $currentTryout = TryOut::where('user_id', $user->id)
                 ->where('package_id', $tryout->id)
                 ->whereNotNull('started_at')
                 ->with('tryout_details')
                 ->first();
 
-            // $tryout->current_tryout = $currentTryout;
-            // $tryout->next = $currentTryout->tryout_details->first()->id;
             if ($currentTryout) {
                 $tryout->current_tryout = $currentTryout;
                 $tryout->next = $currentTryout->tryout_details->first()->id;
@@ -123,9 +126,6 @@ class TryOutController extends Controller
                 $tryout->total_questions = 0;
             }
 
-            // total answered questions
-
-
             foreach ($tryout->packageTryOuts as $tryoutItem) {
                 $course = $tryoutItem->course;
                 $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
@@ -142,9 +142,9 @@ class TryOutController extends Controller
             }
         }
 
-
         return ResponseFormatter::success($myTryouts, 'Data paket tryout berhasil diambil');
     }
+
 
     // show detail package
     public function showDetail($packageId)
@@ -334,7 +334,19 @@ class TryOutController extends Controller
             $totalQuestions = $tryoutDetail->where('tryout_id', $tryoutId)->count();
 
             // next question
-            $nextTryoutDetail = TryoutDetail::where('id', '>', $tryoutDetail->id)->first();
+            $nextTryoutDetail = TryoutDetail::where('tryout_id', $tryoutDetail->tryout_id)
+                ->where('id', '>', $tryoutDetail->id)
+                ->first();
+
+            // Jika nextTryoutDetail belum ditemukan pada tryout_id yang sama,
+            // atau nextTryoutDetail merupakan nomor terakhir dari semua tryout,
+            // maka atur next sebagai null
+            if (!$nextTryoutDetail || $nextTryoutDetail->tryout_id !== $tryoutDetail->tryout_id) {
+                $nextTryoutDetail = null;
+            }
+
+            $tryoutDetail->start_time = now();
+            $tryoutDetail->save();
 
             // Menyiapkan data yang akan dikembalikan
             $questionData = [
@@ -414,13 +426,24 @@ class TryOutController extends Controller
                 return ResponseFormatter::error(null, 'Jawaban tidak ditemukan', 404);
             }
 
-            $nextTryoutDetail = $tryoutDetail->where('id', '>', $tryoutDetail->id)->first();
+            // $nextTryoutDetail = $tryoutDetail->where('id', '>', $tryoutDetail->id)->first();
 
             // Jika tidak ada detail tryout berikutnya, set nilai $next menjadi null
-            $next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
+            // $next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
+
+            $nextTryoutDetail = TryoutDetail::where('tryout_id', $tryoutDetail->tryout_id)
+                ->where('id', '>', $tryoutDetail->id)
+                ->first();
+
+            // Jika nextTryoutDetail belum ditemukan pada tryout_id yang sama,
+            // atau nextTryoutDetail merupakan nomor terakhir dari semua tryout,
+            // maka atur next sebagai null
+            if (!$nextTryoutDetail || $nextTryoutDetail->tryout_id !== $tryoutDetail->tryout_id) {
+                $nextTryoutDetail = null;
+            }
 
             // Memperbarui nilai next
-            $tryoutDetail->next = $next;
+            $tryoutDetail->next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
 
             // pengecekan apakah try out sudah selesai atau belum, jika sudah selesai maka tidak bisa menjawab soal
             if ($tryoutDetail->tryout->finished_at < now()) {
@@ -432,7 +455,8 @@ class TryOutController extends Controller
                 'answer' => $answer->answer,
                 'score' => $answer->score,
                 'updated_by' => $user->id,
-                'course_answer_id' => $answerId // Menambahkan answer_id ke dalam data yang akan disimpan/diperbarui
+                'course_answer_id' => $answerId, // Menambahkan answer_id ke dalam data yang akan disimpan/diperbarui
+                'end_time' => now() // Menambahkan waktu selesai menjawab soal
             ];
 
             // Memperbarui jawaban atau membuat jawaban baru jika belum ada
@@ -548,7 +572,22 @@ class TryOutController extends Controller
             $totalQuestions = $tryout->tryout_details->count();
 
             if ($answeredQuestions < $totalQuestions) {
-                return ResponseFormatter::error(null, 'Masih ada soal yang belum dijawab', 400);
+                // jika waktu tryout belum habis, maka siswa tidak bisa menyelesaikan tryout
+                if ($tryout->finished_at > now()) {
+                    return ResponseFormatter::error(null, 'Masih ada soal yang belum dijawab', 400);
+                } else {
+                    // jika waktu tryout sudah habis, maka siswa bisa menyelesaikan tryout
+                    $tryout->update([
+                        'status_pengerjaan' => 'sudah dikerjakan',
+                        'status' => 2,
+                        'finish_time' => now(),
+                    ]);
+
+                    // Commit transaksi database jika tidak ada kesalahan
+                    DB::commit();
+
+                    return ResponseFormatter::success($tryout, 'Mohon maaf, waktu tryout sudah habis. Tryout berhasil selesai, silahkan cek hasil tryout kamu');
+                }
             }
 
             // check apakah waktu tryout sudah habis atau belum
@@ -606,9 +645,18 @@ class TryOutController extends Controller
     // show student summary tryout
     public function summary($tryoutId)
     {
+        $user = Auth::user();
+
+        // Cari tryout berdasarkan ID dan user_id untuk memastikan kepemilikan
         $tryout = Tryout::where('status', 2)
-                ->with(['tryout_details.courseQuestion.course', 'package'])
-                ->findOrFail($tryoutId);
+            ->where('user_id', $user->id) // Pastikan tryout milik user yang sedang login
+            ->with(['tryout_details.courseQuestion.course', 'package'])
+            ->findOrFail($tryoutId);
+
+        // Pengecekan apakah tryout ditemukan dan milik user yang sedang login
+        if (!$tryout) {
+            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+        }
 
         $passingGrade = $tryout->tryout_details->first()->courseQuestion->course->passing_grade;
 
@@ -702,7 +750,7 @@ class TryOutController extends Controller
             // count is correct answer use score === 5
             $correctAnswers = $tryoutDetail->where('score', 5)->where('tryout_id', $tryoutId)->count();
             // false answer use score 1, 2, 3, 4;
-            $falseAnswers = $tryoutDetail->where('score', '!=', 5)->where('tryout_id', $tryoutId)->count();
+            $falseAnswers = $tryoutDetail->where('score', '!=', 5)->whereNotNull('answer')->where('tryout_id', $tryoutId)->count();
             // blank answer
             $blankAnswers = $tryoutDetail->whereNull('answer')->where('tryout_id', $tryoutId)->count();
 
@@ -728,6 +776,8 @@ class TryOutController extends Controller
                 'question_category' => $tryoutDetail->courseQuestion->course->category->name,
                 'questions' => $tryoutDetail->courseQuestion->makeHidden(['answers', 'course']),
                 'answers' => $tryoutDetail->courseQuestion->answers,
+                'start_time' => $tryoutDetail->start_time,
+                'end_time' => $tryoutDetail->end_time,
             ];
 
             return ResponseFormatter::success($questionData, 'Data soal berhasil diambil');
@@ -736,6 +786,388 @@ class TryOutController extends Controller
         }
     }
 
+    // show ranking for all user tryout by package
+    public function rankingsByPackage(Request $request)
+    {
+        // Validasi input
+        $request->validate([
+            'package_id' => 'required|exists:packages,id',
+        ]);
+
+        // Ambil ID paket tryout dari permintaan
+        $packageId = $request->input('package_id');
+
+        // Ambil parameter pencarian nama jika ada
+        $searchName = $request->input('search_name', '');
+
+        // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang dipilih dan sesuai dengan nama pencarian
+        $usersQuery = User::whereHas('tryouts', function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
+        });
+
+        if (!empty($searchName)) {
+            $usersQuery->where('name', 'like', '%' . $searchName . '%');
+        }
+
+        // Dapatkan pengguna dengan pagination
+        $users = $usersQuery->paginate(10);
+
+        // Inisialisasi array untuk menyimpan data peringkat
+        $rankings = [];
+
+        $lulus = 0; // Counter untuk tryout yang lulus
+
+        // Loop melalui setiap pengguna
+        foreach ($users as $user) {
+            // Ambil tryout pengguna dari paket tryout yang dipilih
+            $tryout = $user->tryouts()->where('package_id', $packageId)->where('status', 2)->first();
+
+            if (!$tryout) {
+                continue; // Skip jika tidak ada tryout yang sesuai
+            }
+
+            $totalScore = 0;
+            foreach ($tryout->tryout_details as $detail) {
+                $totalScore += $detail->score;
+            }
+
+            // Hitung skor berdasarkan kategori soal
+            $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
+            $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
+            $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
+            // Menentukan apakah tryout lulus atau tidak
+            // $twkScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 1)->sum('score') >= 85;
+            // $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 2)->sum('score') >= 65;
+            // $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 3)->sum('score') >= 166;
+
+            if ($twkScore && $tiuScore && $tkpScore && $totalScore >= 311) {
+                $lulus++;
+            }
+
+            // Hitung total skor
+            // $totalScore = $twkScore + $tiuScore + $tkpScore;
+
+            // Tambahkan data peringkat ke dalam array rankings
+            $rankings[] = [
+                'rank' => count($rankings) + 1,
+                'name' => $user->name,
+                'provinsi' => $user->provinsi, // Ganti dengan atribut yang sesuai
+                'twk' => $twkScore,
+                'tiu' => $tiuScore,
+                'tkp' => $tkpScore,
+                'total' => $totalScore,
+                'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus', // Ganti dengan kriteria kelulusan yang sesuai
+            ];
+        }
+
+        // Urutkan peringkat berdasarkan skor total
+        usort($rankings, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+
+        // Tambahkan nomor peringkat setelah diurutkan
+        foreach ($rankings as $index => $ranking) {
+            $rankings[$index]['rank'] = $index + 1;
+        }
+
+        // Paginate the rankings array manually
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $perPage = 10;
+        $currentItems = array_slice($rankings, ($currentPage - 1) * $perPage, $perPage);
+        $paginatedRankings = new LengthAwarePaginator($currentItems, count($rankings), $perPage, $currentPage, [
+            'path' => LengthAwarePaginator::resolveCurrentPath()
+        ]);
+
+        // Kembalikan data peringkat dalam bentuk respons JSON
+        return ResponseFormatter::success($paginatedRankings, 'Data peringkat berhasil diambil');
+    }
+
+    // endpoint all package tryout
+    public function allPackageTryout()
+    {
+        $tryouts = Package::with('packageTryOuts.course.category')->get();
+
+        return ResponseFormatter::success($tryouts, 'Data paket tryout berhasil diambil');
+    }
+
+
+    public function raport()
+    {
+        // Ambil user yang sedang login
+        $user = Auth::user();
+
+        // Ambil semua tryout yang diikuti user
+        $tryouts = Tryout::with('tryout_details.courseQuestion.course.category', 'package')
+            ->where('user_id', $user->id)
+            ->get();
+
+        // Pisahkan tryout yang belum dikerjakan dan sudah dikerjakan
+        $completedTryouts = $tryouts->where('status', 2);
+        $notCompletedTryouts = $tryouts->where('status', '<>', 2);
+
+        // Menghitung statistik
+        $totalTryouts = $tryouts->count();
+        $completedTryoutsCount = $completedTryouts->count();
+        // $passingRate = $completedTryoutsCount / ($totalTryouts > 0 ? $totalTryouts : 1) * 100;
+
+        $lulus = 0; // Counter untuk tryout yang lulus
+
+        foreach ($tryouts as $tryout) {
+            $totalScore = 0;
+            foreach ($tryout->tryout_details as $detail) {
+                $totalScore += $detail->score;
+            }
+
+            // Menentukan apakah tryout lulus atau tidak
+            $twkPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 1)->sum('score') >= 85;
+            $tiuPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 2)->sum('score') >= 65;
+            $tkpPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 3)->sum('score') >= 166;
+
+            if ($twkPass && $tiuPass && $tkpPass && $totalScore >= 311) {
+                $lulus++;
+            }
+        }
+
+        // Hitung persentase kelulusan
+        $passingRate = ($totalTryouts > 0) ? ($lulus / $totalTryouts) * 100 : 0;
+
+        // Persiapkan array untuk menyimpan data tryout beserta nilai kategori
+        $tryoutData = [];
+
+        // Iterasi melalui tryout yang sudah dikerjakan
+        foreach ($completedTryouts as $tryout) {
+            $categories = $tryout->tryout_details->map(function ($detail) {
+                return (object) [
+                    'id' => $detail->courseQuestion->course->category->id,
+                    'name' => $detail->courseQuestion->course->category->name,
+                    'passing_grade' => $detail->courseQuestion->course->passing_grade,
+                    // tambahkan properti lain jika diperlukan
+                ];
+            })->unique()->values()->toArray();
+
+            // Hitung nilai dari setiap kategori soal
+            foreach ($categories as $category) {
+                $category->score = $tryout->tryout_details
+                    ->where('courseQuestion.course.category_id', $category->id)
+                    ->sum('score');
+            }
+
+            // Persiapkan data tryout
+            $tryoutData[] = [
+                'tryout_id' => $tryout->id,
+                'user_id' => $tryout->user_id,
+                'package_id' => $tryout->package_id,
+                'started_at' => $tryout->started_at,
+                'finished_at' => $tryout->finished_at,
+                'finish_time' => $tryout->finish_time,
+                'categories' => $categories,
+                'package' => $tryout->package,
+            ];
+        }
+
+        // Menyiapkan response data
+        $responseData = [
+            'totalTryouts' => $totalTryouts,
+            'completedTryouts' => $completedTryoutsCount,
+            'passingRate' => $passingRate,
+            'tryouts' => $tryoutData,
+        ];
+
+        // Kembalikan data dalam bentuk respons JSON
+        return ResponseFormatter::success($responseData, 'Data raport berhasil diambil');
+    }
+
+    // proses tryout
+    // Fungsi tambahan untuk memproses tryout
+    protected function processTryout($tryout, $user, $startedTryouts)
+    {
+        $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+
+        // hitung jumlah siswa yang sudah membeli paket
+        $tryout->students_count = $tryout->courseStudents()->count();
+
+
+        $currentTryout = TryOut::where('user_id', $user->id)
+            ->where('package_id', $tryout->id)
+            ->whereNotNull('started_at')
+            // ->with('tryout_details')
+            ->first();
+
+        $tryout->is_started = in_array($tryout->id, $startedTryouts);
+
+        if ($currentTryout) {
+            $tryout->current_tryout = $currentTryout;
+            $tryout->next = $currentTryout->tryout_details->first()->id;
+            $answeredQuestions = $currentTryout->tryout_details->whereNotNull('answer')->count();
+            $unansweredQuestions = $currentTryout->tryout_details->whereNull('answer')->count();
+            $totalQuestions = $currentTryout->tryout_details->count();
+
+            $tryout->answered_questions = $answeredQuestions;
+            $tryout->unanswered_questions = $unansweredQuestions;
+            $tryout->total_questions = $totalQuestions;
+        } else {
+            $tryout->current_tryout = null;
+            $tryout->next = null;
+            $tryout->answered_questions = 0;
+            $tryout->unanswered_questions = 0;
+            $tryout->total_questions = 0;
+        }
+
+        foreach ($tryout->packageTryOuts as $tryoutItem) {
+            $course = $tryoutItem->course;
+            $answeredQuestionsIds = StudentAnswer::where('user_id', $user->id)
+                ->whereIn('course_question_id', $course->questions->pluck('id'))
+                ->pluck('course_question_id')
+                ->toArray();
+
+            foreach ($course->questions as $question) {
+                if (!in_array($question->id, $answeredQuestionsIds)) {
+                    $tryoutItem->nextQuestion = $question;
+                    break;
+                }
+            }
+        }
+    }
+
+    // bantu saya buatkan function latihan soal / tryout gratis sama seperti function favorite
+    public function freePackage()
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return ResponseFormatter::error(null, 'User not authenticated', 401);
+        }
+
+        // Ambil semua paket tryout gratis dan menghitung jumlah user yang sudah membeli setiap paket
+        $tryouts = Package::where('is_premium', false)
+            ->withCount(['courseStudents as students_count'])
+            ->get();
+
+        // Olah data image dan cek apakah user telah membeli paket
+        foreach ($tryouts as $tryout) {
+            if ($tryout->cover_path) {
+                $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+            }
+
+            // Cek apakah user sudah membeli paket
+            $tryout->is_enrolled = $user->enrolledPackageTryouts()
+                ->where('package_tryout_id', $tryout->id)
+                ->exists();
+
+            // Jika user sudah membeli paket, tambahkan informasi tambahan
+            if ($tryout->is_enrolled) {
+                $this->processTryout($tryout, $user, []);
+            }
+        }
+
+        return ResponseFormatter::success($tryouts, 'Data paket tryout gratis berhasil diambil');
+    }
+
+    public function claimFreePackage(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return ResponseFormatter::error(null, 'User not authenticated', 401);
+        }
+
+        $packageId = $request->input('package_id');
+
+        $package = Package::where('id', $packageId)->where('is_premium', false)->first();
+
+        if (!$package) {
+            return ResponseFormatter::error(null, 'Paket tidak ditemukan atau bukan paket gratis', 404);
+        }
+
+        // Cek apakah user sudah mengklaim paket ini
+        $isEnrolled = $user->enrolledPackageTryouts()->where('package_tryout_id', $packageId)->exists();
+
+        if ($isEnrolled) {
+            return ResponseFormatter::error(null, 'Anda sudah mengklaim paket ini', 400);
+        }
+
+        // Klaim paket untuk user
+        $user->enrolledPackageTryouts()->attach($packageId, ['created_by' => $user->id]);
+        // $student->packages()->attach($package->id, ['created_by' => '1 ']);
+
+        return ResponseFormatter::success(null, 'Paket berhasil diklaim');
+    }
+
+    // rank by tryout id
+    public function getRankByTryoutId(Request $request, $tryoutId)
+    {
+        // Ambil tryout berdasarkan ID
+        $tryout = Tryout::with('user', 'tryout_details.courseQuestion.course.category')->findOrFail($tryoutId);
+
+        // Ambil ID paket tryout
+        $packageId = $tryout->package_id;
+
+        // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang sama dan sudah selesai
+        $usersQuery = User::whereHas('tryouts', function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
+        });
+
+        // Dapatkan semua pengguna
+        $users = $usersQuery->get();
+
+        // Inisialisasi array untuk menyimpan data peringkat
+        $rankings = [];
+
+        // Loop melalui setiap pengguna
+        foreach ($users as $user) {
+            // Ambil tryout pengguna dari paket tryout yang dipilih
+            $userTryout = $user->tryouts()->where('package_id', $packageId)->where('status', 2)->first();
+
+            if (!$userTryout) {
+                continue; // Skip jika tidak ada tryout yang sesuai
+            }
+
+            $totalScore = 0;
+            foreach ($userTryout->tryout_details as $detail) {
+                $totalScore += $detail->score;
+            }
+
+            // Hitung skor berdasarkan kategori soal
+            $twkScore = $userTryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
+            $tiuScore = $userTryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
+            $tkpScore = $userTryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
+
+            // Hitung total skor dan tentukan apakah tryout lulus atau tidak
+            if ($twkScore >= 85 && $tiuScore >= 65 && $tkpScore >= 166 && $totalScore >= 311) {
+                $lulus = true;
+            } else {
+                $lulus = false;
+            }
+
+            // Tambahkan data peringkat ke dalam array rankings
+            $rankings[] = [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'provinsi' => $user->provinsi, // Ganti dengan atribut yang sesuai
+                'twk' => $twkScore,
+                'tiu' => $tiuScore,
+                'tkp' => $tkpScore,
+                'total' => $totalScore,
+                'keterangan' => $lulus ? 'Lulus' : 'Tidak Lulus', // Ganti dengan kriteria kelulusan yang sesuai
+            ];
+        }
+
+        // Urutkan peringkat berdasarkan skor total
+        usort($rankings, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+
+        // Tambahkan nomor peringkat setelah diurutkan
+        foreach ($rankings as $index => $ranking) {
+            $rankings[$index]['rank'] = $index + 1;
+        }
+
+        // Cari peringkat pengguna yang sesuai dengan tryoutId yang diberikan
+        $userRank = collect($rankings)->firstWhere('user_id', $tryout->user_id);
+
+        // Kembalikan data peringkat pengguna dalam bentuk respons JSON
+        return ResponseFormatter::success($userRank, 'Data peringkat berhasil diambil');
+    }
 
     /**
      * Show the form for editing the specified resource.

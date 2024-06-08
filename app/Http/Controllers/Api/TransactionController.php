@@ -93,8 +93,8 @@ class TransactionController extends Controller
         // check user
         if (!$student) {
             return ResponseFormatter::error([
-                'message' => 'Student not found',
-            ], 'Student not found', 422);
+                'message' => 'Email Siswa tidak ditemukan',
+            ], 'Email Siswa tidak ditemukan', 422);
         }
 
         // pengecekan request email dengan quantity apakah sama atau belum
@@ -122,7 +122,7 @@ class TransactionController extends Controller
             $student_id = $student->id;
 
             // Tetapkan nilai student_id_transaction berdasarkan kondisi
-            $student_id_transaction = ($request->email === auth()->user()->email) ? $student_id : null;
+            $student_id_transaction = ($request->email === auth()->user()->email) ? $student_id : auth()->id();
 
             $fixedPrice = $package->discount ?? $package->price;
 
@@ -215,7 +215,7 @@ class TransactionController extends Controller
     }
 
     // transaction payment method menggunakan saldo user yang sudah login dan membeli paket tryout yang diinginkan user tersebut
-    public function transactionPayment(Request $request)
+    public function saldoTransaction(Request $request)
     {
         // validate request data
         $validator = Validator::make($request->all(), [
@@ -242,11 +242,11 @@ class TransactionController extends Controller
         }
 
         // check user
-        if ($transaction->student_id != auth()->id()) {
-            return ResponseFormatter::error([
-                'message' => 'Unauthorized',
-            ], 'Unauthorized', 401);
-        }
+        // if ($transaction->student_id != auth()->id()) {
+        //     return ResponseFormatter::error([
+        //         'message' => 'Unauthorized',
+        //     ], 'Unauthorized', 401);
+        // }
 
         // check transaction status
         if ($transaction->payment_status != 'PENDING') {
@@ -256,11 +256,14 @@ class TransactionController extends Controller
         }
 
         // check user balance
-        if (auth()->user()->balance < $transaction->total_amount) {
+        if (auth()->user()->wallet_balance < $transaction->total_amount) {
             return ResponseFormatter::error([
-                'message' => 'Insufficient balance',
-            ], 'Insufficient balance', 422);
+                'message' => 'Saldo tidak mencukupi',
+            ], 'Saldo tidak mencukupi', 422);
         }
+
+        // student
+        $student = User::find($transaction->student_id);
 
         try {
             DB::beginTransaction();
@@ -274,6 +277,9 @@ class TransactionController extends Controller
             $user = Auth::user();
             $user->wallet_balance -= $transaction->total_amount;
             $user->save();
+
+            // update course to student
+            $student->packages()->attach($transaction->package_id, ['created_by' => auth()->id()]);
 
             DB::commit();
 

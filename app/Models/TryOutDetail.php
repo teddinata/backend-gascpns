@@ -19,7 +19,15 @@ class TryOutDetail extends Model
         'score',
         'created_by',
         'updated_by',
+        'start_time',
+        'end_time',
     ];
+
+    // start_time and end_time are casted to datetime
+    // protected $casts = [
+    //     'start_time' => 'datetime',
+    //     'end_time' => 'datetime',
+    // ];
 
     public function tryout()
     {

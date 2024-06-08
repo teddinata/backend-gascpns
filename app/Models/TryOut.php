@@ -33,6 +33,11 @@ class TryOut extends Model
         return $this->belongsTo(Package::class);
     }
 
+    public function packageTryOut()
+    {
+        return $this->belongsTo(PackageTryOut::class, 'package_tryout_id', 'id');
+    }
+
     public function tryout_details()
     {
         return $this->hasMany(TryoutDetail::class, 'tryout_id', 'id');
