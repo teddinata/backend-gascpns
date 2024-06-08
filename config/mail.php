@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'default' => env('MAIL_MAILER', 'log'),
+    'default' => env('MAIL_MAILER', 'smtp'),
 
     /*
     |--------------------------------------------------------------------------
@@ -45,7 +45,7 @@ return [
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+            // 'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
         'ses' => [
@@ -98,6 +98,15 @@ return [
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
+    ],
+
+    'markdown' => [
+        'theme' => 'default',
+
+        'paths' => [
+            // get the path from the email template in views / emails / verification.blade.php
+            resource_path('views/emails'),
+        ],
     ],
 
 ];

@@ -28,6 +28,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             TypeSeeder::class,
             CategorySeeder::class,
+            BankSeeder::class,
+            EWalletSeeder::class,
+            PaymentInstructionSeeder::class,
         ]);
     }
 }

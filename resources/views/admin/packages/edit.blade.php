@@ -200,13 +200,15 @@
     <div class="flex flex-col gap-[10px]">
         <p class="font-semibold">Premium</p>
         <div class="flex items-center gap-5">
+            <input type="hidden" name="is_premium" value="0">
             <label for="togglePremium" class="flex items-center gap-[10px]">
-                <input type="checkbox" id="togglePremium" class="hidden" value="{{ $package->is_premium == 1 ? '1' : '0' }}" name="is_premium" {{ $package->is_premium == 1 ? 'checked' : '' }}>
+                <input type="checkbox" id="togglePremium" class="hidden" value="1" name="is_premium" {{ $package->is_premium == 1 ? 'checked' : '' }}>
                 <div class="toggle-switch"></div>
                 <span id="toggleTextPremium" class="text-gray-600">{{ $package->is_premium == 1 ? 'Is Premium' : 'Is Free' }}</span>
             </label>
         </div>
     </div>
+
 
 
     <label class="font-semibold flex items-center gap-[10px]">

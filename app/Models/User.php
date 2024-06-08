@@ -35,6 +35,8 @@ class User extends Authenticatable
         'last_login',
         'wallet_balance',
         'referral_code',
+        'otp',
+        'otp_expired_at',
     ];
 
     /**
@@ -46,6 +48,13 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function markEmailAsVerified()
+    {
+        $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+    }
 
     /**
      * generate referral code
@@ -133,6 +142,11 @@ class User extends Authenticatable
     public function transactions()
     {
         return $this->hasMany(Transaction::class, 'student_id', 'id');
+    }
+
+    public function tryouts()
+    {
+        return $this->hasMany(TryOut::class, 'user_id', 'id');
     }
 
 

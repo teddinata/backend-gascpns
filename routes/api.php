@@ -37,9 +37,12 @@ Route::get('/payment-instructions/{bank}', [PaymentController::class, 'getPaymen
 
 Route::group(['prefix' => 'v1'], function () {
 
-
-
     Route::post('register', [AuthController::class, 'register']);
+
+    // otp verify
+    Route::post('otp/verify', [AuthController::class, 'verifyOtp']);
+    Route::post('otp/resend', [AuthController::class, 'resendOtp']);
+
     Route::post('login', [AuthController::class, 'login']);
     // logout
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -51,6 +54,9 @@ Route::group(['prefix' => 'v1'], function () {
 
     // route middleware auth for user access tryout
     Route::group(['middleware' => ['auth:sanctum']], function () {
+        // route for tryout free
+        Route::get('/tryout/free', [TryOutController::class, 'freePackage']);
+
         Route::get('tryout/favorite', [TryOutController::class, 'soalFavorite']);
         // route for user access tryout
         Route::apiResource('tryout', TryOutController::class);
@@ -101,6 +107,21 @@ Route::group(['prefix' => 'v1'], function () {
 
         // endpoint payment menggunakan saldo user
         Route::post('/tryout/transactions/saldo', [TransactionController::class, 'saldoTransaction']);
+
+        // endpoint rankings tryout user login
+        Route::get('/rankings-by-package', [TryOutController::class, 'rankingsByPackage']);
+
+        // endpoint rankings by tryout
+        Route::get('/tryout/{tryoutId}/rank', [TryoutController::class, 'getRankByTryoutId']);
+
+        // endpoint all packages
+        Route::get('/packages', [TryOutController::class, 'allPackageTryout']);
+
+        // raport
+        Route::get('/raport', [TryOutController::class, 'raport']);
+
+        // claim free package
+        Route::post('/tryout/free/claim', [TryOutController::class, 'claimFreePackage']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
