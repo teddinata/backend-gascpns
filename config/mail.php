@@ -82,6 +82,10 @@ return [
             ],
         ],
 
+        'mailgun' => [
+            'transport' => 'mailgun',
+        ],
+
     ],
 
     /*
@@ -98,6 +102,11 @@ return [
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
+    ],
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
     ],
 
     'markdown' => [
