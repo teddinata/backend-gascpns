@@ -83,6 +83,38 @@
                     </p>
                 </a>
             </li>
+
+            {{-- transaction --}}
+            <li>
+                <a href="{{ route('dashboard.transactions.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.transactions.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.transactions.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Transaksi
+                    </p>
+                </a>
+            </li>
+
+            {{-- payment method --}}
+            <li>
+                <a href="{{ route('dashboard.payment-methods.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.payment-methods.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.payment-methods.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Metode Pembayaran
+                    </p>
+                </a>
+            </li>
             @endrole
 
             @role('student')

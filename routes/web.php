@@ -13,6 +13,8 @@ use App\Http\Controllers\PackageController;
 use App\Http\Controllers\PackageTryOutController;
 use App\Http\Controllers\TryOutStudentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Models\PackageTryOut;
 
 Route::get('/', function () {
@@ -122,6 +124,12 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('students', StudentController::class)->middleware('role:teacher');
         Route::resource('mentor', MentorController::class)->middleware('role:teacher');
+
+        // transactions
+        Route::resource('transactions', TransactionController::class)->middleware('role:teacher');
+
+        // payment methods
+        Route::resource('payment-methods', PaymentMethodController::class)->middleware('role:teacher');
 
         Route::get('/settings', function () {
             return view('dashboard.settings');

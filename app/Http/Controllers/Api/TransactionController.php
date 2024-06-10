@@ -161,6 +161,7 @@ class TransactionController extends Controller
                             'package_price' => $fixedPrice,
                             'quantity' => 1, // Hanya satu paket per transaksi
                             'price' => $fixedPrice,
+                            'original_price' => $package->price,
                         ]);
                     }
                 } else {

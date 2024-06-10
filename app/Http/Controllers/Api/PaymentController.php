@@ -12,7 +12,9 @@ class PaymentController extends Controller
     public function getAvailableBanks()
     {
         // get all data from list_available_banks table without created at and updated at column
-        $list_available_banks = \DB::table('banks')->select('id', 'name', 'code', 'country', 'currency', 'is_activated', 'logo')->get();
+        $list_available_banks = \DB::table('banks')->select('id', 'name', 'code', 'country', 'currency', 'is_activated', 'logo')
+            ->where('is_activated', 1)
+            ->get();
 
         // return response in json format
         return response()->json([
@@ -26,7 +28,9 @@ class PaymentController extends Controller
     public function getAvailableEWallets()
     {
         // get all data from list_ewallets table without created at and updated at column and show is actiavted 1 will be true response and 0 will be false response not show in response data as 1 or 0
-        $list_ewallets = \DB::table('ewallets')->select('id', 'name', 'code', 'ewallet_type', 'country', 'currency', 'is_activated', 'logo')->get();
+        $list_ewallets = \DB::table('ewallets')->select('id', 'name', 'code', 'ewallet_type', 'country', 'currency', 'is_activated', 'logo')
+            ->where('is_activated', 1)
+            ->get();
 
         // return response in json format
         return response()->json([

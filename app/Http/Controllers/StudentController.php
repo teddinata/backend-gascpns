@@ -14,10 +14,10 @@ class StudentController extends Controller
     public function index()
     {
         // user where roles with spatie is student
-        $students = User::whereHas('roles', function ($query) {
-            $query->where('name', 'student');
-        })->paginate(10);
-
+        // $students = User::where('role', function ($query) {
+        //     $query->where('name', 'student');
+        // })->paginate(10);
+        $students = User::where('role', 'user')->paginate(10);
         $title = 'Delete Student!';
         $text = "Are you sure you want to delete?";
 
