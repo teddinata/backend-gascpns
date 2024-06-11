@@ -40,6 +40,6 @@ class TryOut extends Model
 
     public function tryout_details()
     {
-        return $this->hasMany(TryoutDetail::class, 'tryout_id', 'id');
+        return $this->hasMany(TryOutDetail::class, 'tryout_id', 'id');
     }
 }

@@ -123,6 +123,12 @@ Route::group(['prefix' => 'v1'], function () {
         // claim free package
         Route::post('/tryout/free/claim', [TryOutController::class, 'claimFreePackage']);
 
+        // route for transaction history for user login
+        Route::get('/transactions/history', [TransactionController::class, 'history']);
+
+        // route for transaction detail history for user login
+        Route::get('/transactions/history/{transactionId}', [TransactionController::class, 'historyDetail']);
+
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
         //     ->middleware('auth:sanctum')

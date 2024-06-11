@@ -52,6 +52,9 @@ Route::middleware('auth')->group(function () {
         // import
         Route::post('course_questions/{course}/import', [CourseQuestionController::class, 'import'])->name('course_questions.import');
 
+        // bulk delete
+        Route::delete('course_questions/bulk_delete', [CourseQuestionController::class, 'bulkDelete'])->name('course_questions.bulk_delete');
+
         Route::get('/course/students/show/{course}', [CourseStudentController::class, 'index'])
         ->middleware('role:teacher')
         ->name('courses.course_students.index');

@@ -154,6 +154,16 @@ class CourseQuestionController extends Controller
             'file' => 'required|mimes:xlsx'
         ]);
 
+        // DB::beginTransaction();
+
+        // $file = $request->file('file');
+        // Excel::import(new QuestionsImport($course), $file);
+
+        // DB::commit();
+
+        // return redirect()->route('dashboard.courses.show', $course->id)->with('success', 'Questions imported successfully.');
+
+        // dd($request->file());
         DB::beginTransaction();
 
         try {
@@ -167,4 +177,23 @@ class CourseQuestionController extends Controller
             return redirect()->back()->with('error', 'Failed to import questions.');
         }
     }
+
+
+    public function bulkDelete(Request $request)
+    {
+        // Validasi bahwa minimal satu pertanyaan dipilih
+        $request->validate([
+            'selected_questions' => 'required|array',
+        ]);
+
+        // Hapus pertanyaan yang dipilih
+        foreach ($request->selected_questions as $questionId) {
+            // Lakukan penghapusan pertanyaan
+            // Misalnya:
+            Question::findOrFail($questionId)->delete();
+        }
+
+        return redirect()->back()->with('success', 'Selected questions deleted successfully');
+    }
+
 }

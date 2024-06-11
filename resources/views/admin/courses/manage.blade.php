@@ -109,10 +109,10 @@
 @endif
 
 <div id="course-test" class="mx-[70px] w-[870px] mt-[30px]">
-
     <h2 class="font-bold text-2xl">Course Tests</h2>
 
     {{-- import soal --}}
+    <!-- Import Questions Form -->
     <div class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
         <form action="{{ route('dashboard.course_questions.import', $course) }}" method="POST" enctype="multipart/form-data" class="flex items-center justify-center w-full">
             @csrf
@@ -130,45 +130,81 @@
         </form>
     </div>
 
+    <!-- New Question Button -->
+    <a href="{{ route('dashboard.course.create.question', $course) }}" class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
+        <div class="flex items-center gap-5">
+            <div>
+                <img src="{{ asset('images/icons/note-add.svg') }}" alt="icon">
+            </div>
+            <p class="font-bold text-xl">New Question</p>
+        </div>
+    </a>
+
+    <!-- List of Questions with Bulk Delete -->
     <div class="flex flex-col gap-[30px] mt-2">
-        <a href="{{ route('dashboard.course.create.question', $course) }}" class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
-            <div class="flex items-center gap-5">
-                <div>
-                    <img src="{{ asset('images/icons/note-add.svg') }}" alt="icon">
+        <form action="{{ route('dashboard.course_questions.bulk_delete') }}" method="POST" id="bulk-delete-form">
+            @csrf
+            @method('DELETE')
+
+            @forelse ($questions as $question)
+            <div class="question-card w-full flex items-center justify-between p-4 border border-[#EEEEEE] rounded-[20px]">
+                <!-- Checkbox for Selecting Question -->
+                <div class="flex items-center gap-5">
+                    <input type="checkbox" name="selected_questions[]" value="{{ $question->id }}" class="question-checkbox">
+                    <div class="flex flex-col gap-[6px]">
+                        <p class="text-[#7F8190]">Question</p>
+                        <p class="font-bold text-xl">{!! $question->question !!}</p>
+                    </div>
                 </div>
-                <p class="font-bold text-xl">New Question</p>
-            </div>
-        </a>
-        @forelse ($questions as $question)
-        <div class="question-card w-full flex items-center justify-between p-4 border border-[#EEEEEE] rounded-[20px]">
-            <div class="flex flex-col gap-[6px]">
-                <p class="text-[#7F8190]">Question</p>
-                <p class="font-bold text-xl">{!! $question->question !!}</p>
-            </div>
-            <div class="flex items-center gap-[14px]">
-                <a href="{{ route('dashboard.course_questions.edit', $question) }}" class="bg-[#0A090B] p-[14px_30px] rounded-full text-white font-semibold">Edit</a>
-                {{-- <form action=""> --}}
-                    <a href="{{ route('dashboard.course_questions.destroy', $question) }}"
-                        class="w-[52px] h-[52px] flex shrink-0 items-center justify-center rounded-full bg-[#FD445E]"
-                        data-confirm-delete="true">
+                <div class="flex items-center gap-[14px]">
+                    <a href="{{ route('dashboard.course_questions.edit', $question) }}" class="bg-[#0A090B] p-[14px_30px] rounded-full text-white font-semibold">Edit</a>
+                    <!-- Delete Icon -->
+                    <a href="{{ route('dashboard.course_questions.destroy', $question) }}" class="w-[52px] h-[52px] flex shrink-0 items-center justify-center rounded-full bg-[#FD445E]" data-confirm-delete="true">
                         <img src="{{ asset('images/icons/trash.svg') }}" alt="icon">
                     </a>
-                {{-- </form> --}}
-
+                </div>
             </div>
-        </div>
-        @empty
-        <div class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
-            <div class="flex items-center gap-5">
-                <p class="font-bold text-xl">Kelas ini belum memiliki soal</p>
+            @empty
+            <div class="w-full h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
+                <div class="flex items-center gap-5">
+                    <p class="font-bold text-xl">Kelas ini belum memiliki soal</p>
+                </div>
             </div>
-        </div>
-        @endforelse
+            @endforelse
+            <!-- Bulk Delete Button -->
+            <button type="button" id="bulk-delete-button" class="w-full mt-4 h-[92px] flex items-center justify-center p-4 border-dashed border-2 border-[#0A090B] rounded-[20px]">
+                <div class="flex items-center gap-5">
+                    <p class="font-bold text-xl">Delete Selected</p>
+                </div>
+            </button>
+        </form>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
+<script>
+    // Function to handle bulk delete
+    function handleBulkDelete(event) {
+        event.preventDefault();
+
+        const selectedQuestions = document.querySelectorAll('.question-checkbox:checked');
+
+        if (selectedQuestions.length === 0) {
+            alert('Please select at least one question to delete.');
+            return;
+        }
+
+        if (confirm('Are you sure you want to delete the selected questions?')) {
+            document.getElementById('bulk-delete-form').submit();
+        }
+    }
+
+    // Add event listener to the bulk delete button
+    document.getElementById('bulk-delete-button').addEventListener('click', handleBulkDelete);
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const menuButton = document.getElementById('more-button');

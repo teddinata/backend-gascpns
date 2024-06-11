@@ -10,7 +10,7 @@ use App\Models\StudentAnswer;
 use App\Models\Package;
 use App\Models\PackageTryOut;
 use App\Models\TryOut;
-use App\Models\TryoutDetail;
+use App\Models\TryOutDetail;
 use App\Models\Course;
 use App\Models\CourseQuestion;
 use App\Models\CourseAnswer;
@@ -215,7 +215,7 @@ class TryOutController extends Controller
             // Menyimpan semua pertanyaan ke dalam tabel tryout_details
             foreach ($package->packageTryOuts as $packageTryOut) {
                 foreach ($packageTryOut->course->questions as $question) {
-                    TryoutDetail::create([
+                    TryOutDetail::create([
                         'tryout_id' => $tryout->id,
                         'course_question_id' => $question->id, // Simpan ID pertanyaan
                         'answer' => null, // Jawaban awalnya kosong
@@ -309,9 +309,9 @@ class TryOutController extends Controller
     {
         try {
             // mengambil tryoutId dari questionId
-            $tryoutId = TryoutDetail::where('id', $questionId)->first()->tryout_id;
+            $tryoutId = TryOutDetail::where('id', $questionId)->first()->tryout_id;
             // Mengambil detail tryout beserta daftar soal dan jawaban
-            $tryoutDetail = TryoutDetail::with(['courseQuestion.answers'])
+            $tryoutDetail = TryOutDetail::with(['courseQuestion.answers'])
                 ->where('tryout_id', $tryoutId)
                 ->findOrFail($questionId);
 
@@ -334,7 +334,7 @@ class TryOutController extends Controller
             $totalQuestions = $tryoutDetail->where('tryout_id', $tryoutId)->count();
 
             // next question
-            $nextTryoutDetail = TryoutDetail::where('tryout_id', $tryoutDetail->tryout_id)
+            $nextTryoutDetail = TryOutDetail::where('tryout_id', $tryoutDetail->tryout_id)
                 ->where('id', '>', $tryoutDetail->id)
                 ->first();
 
@@ -412,7 +412,7 @@ class TryOutController extends Controller
             DB::beginTransaction();
 
             // Cari detail tryout berdasarkan ID
-            $tryoutDetail = TryoutDetail::with('tryout')
+            $tryoutDetail = TryOutDetail::with('tryout')
                 ->findOrFail($questionId);
 
             if (!$tryoutDetail) {
@@ -431,7 +431,7 @@ class TryOutController extends Controller
             // Jika tidak ada detail tryout berikutnya, set nilai $next menjadi null
             // $next = $nextTryoutDetail ? $nextTryoutDetail->id : null;
 
-            $nextTryoutDetail = TryoutDetail::where('tryout_id', $tryoutDetail->tryout_id)
+            $nextTryoutDetail = TryOutDetail::where('tryout_id', $tryoutDetail->tryout_id)
                 ->where('id', '>', $tryoutDetail->id)
                 ->first();
 
@@ -481,7 +481,7 @@ class TryOutController extends Controller
         $user = Auth::user();
 
         // Cari detail tryout berdasarkan ID
-        $tryoutDetail = TryoutDetail::with('tryout')
+        $tryoutDetail = TryOutDetail::with('tryout')
             ->findOrFail($questionId);
 
         if (!$tryoutDetail) {
@@ -531,7 +531,7 @@ class TryOutController extends Controller
         $user = Auth::user();
 
         // Cari detail tryout
-        $tryoutDetail = TryoutDetail::where('tryout_id', $tryoutId)
+        $tryoutDetail = TryOutDetail::where('tryout_id', $tryoutId)
             ->where('course_question_id', $questionId)
             ->first();
 
@@ -724,7 +724,7 @@ class TryOutController extends Controller
                 })
                 ->first()->id;
             // Mengambil detail tryout beserta daftar soal dan jawaban
-            $tryoutDetail = TryoutDetail::with(['courseQuestion','courseQuestion.answers'])
+            $tryoutDetail = TryOutDetail::with(['courseQuestion','courseQuestion.answers'])
                 ->where('tryout_id', $tryoutId)
                 ->findOrFail($questionId);
             // dd($tryoutDetail);
@@ -755,7 +755,7 @@ class TryOutController extends Controller
             $blankAnswers = $tryoutDetail->whereNull('answer')->where('tryout_id', $tryoutId)->count();
 
             // next question
-            $nextTryoutDetail = TryoutDetail::where('id', '>', $tryoutDetail->id)->first();
+            $nextTryoutDetail = TryOutDetail::where('id', '>', $tryoutDetail->id)->first();
 
             // Menyiapkan data yang akan dikembalikan
             $questionData = [

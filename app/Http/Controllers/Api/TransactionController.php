@@ -291,6 +291,31 @@ class TransactionController extends Controller
         }
     }
 
+    // show transaction history for user
+    public function history(Request $request)
+    {
+        $transactions = Transaction::with('details', 'package')
+            ->where('student_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return ResponseFormatter::success($transactions, 'Transaction history');
+    }
+
+    // show transaction history detail for user
+    public function historyDetail(string $id)
+    {
+        $transaction = Transaction::with('details', 'package')->find($id);
+
+        if (!$transaction) {
+            return ResponseFormatter::error([
+                'message' => 'Transaction not found',
+            ], 'Transaction not found', 404);
+        }
+
+        return ResponseFormatter::success($transaction, 'Transaction detail');
+    }
+
 
     /**
      * Show the form for editing the specified resource.
