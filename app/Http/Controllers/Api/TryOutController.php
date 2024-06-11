@@ -189,7 +189,7 @@ class TryOutController extends Controller
             DB::beginTransaction();
 
             // Cek apakah siswa sudah memulai tryout sebelumnya
-            $existingTryout = Tryout::where('user_id', $user->id)
+            $existingTryout = TryOut::where('user_id', $user->id)
                 ->where('package_id', $packageId)
                 ->exists();
 
@@ -198,7 +198,7 @@ class TryOutController extends Controller
             }
 
             // Membuat tryout baru
-            $tryout = Tryout::create([
+            $tryout = TryOut::create([
                 'user_id' => $user->id,
                 'package_id' => $packageId,
                 'started_at' => now(),
@@ -231,20 +231,20 @@ class TryOutController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Tryout berhasil dimulai',
+                'message' => 'TryOut berhasil dimulai',
                 'data' => $tryout,
                 'next' => $tryout->next
             ], 200);
         } catch (\Exception $e) {
             DB::rollBack();
-            return ResponseFormatter::error($e->getMessage(), 'Tryout gagal dimulai', 500);
+            return ResponseFormatter::error($e->getMessage(), 'TryOut gagal dimulai', 500);
         }
     }
 
     public function navigation($tryoutId)
     {
         // dd($tryoutId);
-        $tryout = Tryout::with('tryout_details')->findOrFail($tryoutId);
+        $tryout = TryOut::with('tryout_details')->findOrFail($tryoutId);
         $tryoutDetails = $tryout->tryout_details;
 
         // Menambahkan nomor soal dan navigasi
@@ -374,7 +374,7 @@ class TryOutController extends Controller
     // {
     //     try {
     //         // Mengambil detail tryout beserta daftar soal dan jawaban
-    //         $tryout = Tryout::with(['tryout_details.courseQuestion' => function ($query) {
+    //         $tryout = TryOut::with(['tryout_details.courseQuestion' => function ($query) {
     //             $query->with(['answers:id,course_question_id,answer']);
     //         }])->findOrFail($tryoutId);
 
@@ -561,10 +561,10 @@ class TryOutController extends Controller
             // Mulai transaksi database
             DB::beginTransaction();
 
-            $tryout = Tryout::findOrFail($tryoutId);
+            $tryout = TryOut::findOrFail($tryoutId);
 
             if (!$tryout) {
-                return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+                return ResponseFormatter::error(null, 'TryOut tidak ditemukan', 404);
             }
 
             // check apakah semua pertanyaan pada tryout sudah dijawab atau belum
@@ -586,7 +586,7 @@ class TryOutController extends Controller
                     // Commit transaksi database jika tidak ada kesalahan
                     DB::commit();
 
-                    return ResponseFormatter::success($tryout, 'Mohon maaf, waktu tryout sudah habis. Tryout berhasil selesai, silahkan cek hasil tryout kamu');
+                    return ResponseFormatter::success($tryout, 'Mohon maaf, waktu tryout sudah habis. TryOut berhasil selesai, silahkan cek hasil tryout kamu');
                 }
             }
 
@@ -604,7 +604,7 @@ class TryOutController extends Controller
             // Commit transaksi database jika tidak ada kesalahan
             DB::commit();
 
-            return ResponseFormatter::success($tryout, 'Tryout berhasil selesai');
+            return ResponseFormatter::success($tryout, 'TryOut berhasil selesai');
         } catch (\Exception $e) {
             // Rollback transaksi database jika terjadi kesalahan
             DB::rollback();
@@ -614,10 +614,10 @@ class TryOutController extends Controller
     // function finish tryout
     public function finishTryoutWithoutDB($tryoutId)
     {
-        $tryout = Tryout::findOrFail($tryoutId);
+        $tryout = TryOut::findOrFail($tryoutId);
 
         if (!$tryout) {
-            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+            return ResponseFormatter::error(null, 'TryOut tidak ditemukan', 404);
         }
 
         // check apakah semua pertanyaan pada tryout sudah dijawab atau belum
@@ -639,7 +639,7 @@ class TryOutController extends Controller
             'finish_time' => now(),
         ]);
 
-        return ResponseFormatter::success($tryout, 'Tryout berhasil selesai');
+        return ResponseFormatter::success($tryout, 'TryOut berhasil selesai');
     }
 
     // show student summary tryout
@@ -648,14 +648,14 @@ class TryOutController extends Controller
         $user = Auth::user();
 
         // Cari tryout berdasarkan ID dan user_id untuk memastikan kepemilikan
-        $tryout = Tryout::where('status', 2)
+        $tryout = TryOut::where('status', 2)
             ->where('user_id', $user->id) // Pastikan tryout milik user yang sedang login
             ->with(['tryout_details.courseQuestion.course', 'package'])
             ->findOrFail($tryoutId);
 
         // Pengecekan apakah tryout ditemukan dan milik user yang sedang login
         if (!$tryout) {
-            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+            return ResponseFormatter::error(null, 'TryOut tidak ditemukan', 404);
         }
 
         $passingGrade = $tryout->tryout_details->first()->courseQuestion->course->passing_grade;
@@ -679,7 +679,7 @@ class TryOutController extends Controller
         $tryout->next = $tryout->tryout_details->first()->id;
 
         if (!$tryout) {
-            return ResponseFormatter::error(null, 'Tryout tidak ditemukan', 404);
+            return ResponseFormatter::error(null, 'TryOut tidak ditemukan', 404);
         }
 
         $answeredQuestions = $tryout->tryout_details->whereNotNull('answer')->count();
@@ -717,7 +717,7 @@ class TryOutController extends Controller
     {
         try {
             // mengambil tryoutId dari questionId
-            $tryoutId = Tryout::where('status', 2)
+            $tryoutId = TryOut::where('status', 2)
                 ->with(['tryout_details.courseQuestion.course', 'package'])
                 ->whereHas('tryout_details', function ($query) use ($questionId) {
                     $query->where('id', $questionId);
@@ -897,7 +897,7 @@ class TryOutController extends Controller
         $user = Auth::user();
 
         // Ambil semua tryout yang diikuti user
-        $tryouts = Tryout::with('tryout_details.courseQuestion.course.category', 'package')
+        $tryouts = TryOut::with('tryout_details.courseQuestion.course.category', 'package')
             ->where('user_id', $user->id)
             ->get();
 
@@ -1097,7 +1097,7 @@ class TryOutController extends Controller
     public function getRankByTryoutId(Request $request, $tryoutId)
     {
         // Ambil tryout berdasarkan ID
-        $tryout = Tryout::with('user', 'tryout_details.courseQuestion.course.category')->findOrFail($tryoutId);
+        $tryout = TryOut::with('user', 'tryout_details.courseQuestion.course.category')->findOrFail($tryoutId);
 
         // Ambil ID paket tryout
         $packageId = $tryout->package_id;

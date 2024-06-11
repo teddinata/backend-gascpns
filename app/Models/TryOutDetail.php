@@ -31,7 +31,7 @@ class TryOutDetail extends Model
 
     public function tryout()
     {
-        return $this->belongsTo(Tryout::class, 'tryout_id', 'id');
+        return $this->belongsTo(TryOut::class, 'tryout_id', 'id');
     }
 
     public function courseQuestion()
