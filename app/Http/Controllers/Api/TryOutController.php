@@ -23,7 +23,7 @@ class TryOutController extends Controller
     // tryout on sale without auth
     public function onSale()
     {
-        $tryouts = Package::where('is_premium', true)->paginate(6);
+        $tryouts = Package::where('is_premium', true)->where('status', 1)->paginate(6);
 
         foreach ($tryouts as $tryout) {
             $tryout->cover_path = asset('storage/' . $tryout->cover_path);
@@ -43,6 +43,7 @@ class TryOutController extends Controller
 
         // Mengambil semua paket tryout dan menghitung jumlah user yang sudah membeli setiap paket
         $tryouts = Package::where('is_premium', true)
+            ->where('status', 1)
             ->withCount(['courseStudents as students_count'])
             ->paginate(6);
 
@@ -197,20 +198,23 @@ class TryOutController extends Controller
                 return ResponseFormatter::error(null, 'Kamu sudah memulai tryout ini sebelumnya', 400);
             }
 
+            // Mengambil semua pertanyaan dalam paket tryout
+            $package = Package::with('packageTryOuts.course.questions')->findOrFail($packageId);
+
+            // Mengambil durasi dari package
+            $totalDuration = $package->total_duration; // pastikan ini dalam satuan menit
+
             // Membuat tryout baru
             $tryout = TryOut::create([
                 'user_id' => $user->id,
                 'package_id' => $packageId,
                 'started_at' => now(),
                 // finished at diisi ditambahkan 100 menit dari waktu sekarang
-                'finished_at' => now()->addMinutes(100),
+                'finished_at' => now()->addMinutes($totalDuration),
                 'created_by' => $user->id,
                 'status_pengerjaan' => 'sedang dikerjakan',
                 'status' => 1,
             ]);
-
-            // Mengambil semua pertanyaan dalam paket tryout
-            $package = Package::with('packageTryOuts.course.questions')->findOrFail($packageId);
 
             // Menyimpan semua pertanyaan ke dalam tabel tryout_details
             foreach ($package->packageTryOuts as $packageTryOut) {

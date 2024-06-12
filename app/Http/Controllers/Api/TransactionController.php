@@ -294,8 +294,9 @@ class TransactionController extends Controller
     // show transaction history for user
     public function history(Request $request)
     {
-        $transactions = Transaction::with('details', 'package')
-            ->where('student_id', auth()->id())
+        $transactions = Transaction::with('details', 'package', 'student', 'studentTransaction')
+            // ->where('student_id', auth()->id())
+            ->where('student_id_transaction', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -305,7 +306,10 @@ class TransactionController extends Controller
     // show transaction history detail for user
     public function historyDetail(string $id)
     {
-        $transaction = Transaction::with('details', 'package')->find($id);
+        $transaction = Transaction::with('details', 'package', 'student', 'studentTransaction')
+            // ->where('student_id', auth()->id())
+            ->where('student_id_transaction', auth()->id())
+            ->find($id);
 
         if (!$transaction) {
             return ResponseFormatter::error([
