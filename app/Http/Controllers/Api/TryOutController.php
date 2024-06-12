@@ -80,9 +80,9 @@ class TryOutController extends Controller
             ->get();
 
         // buat kondisi jika siswa belum membeli tryout
-        if ($myTryouts->isEmpty()) {
-            return ResponseFormatter::error(null, 'Kamu belum membeli paket tryout', 200);
-        }
+        // if ($myTryouts->isEmpty()) {
+        //     return ResponseFormatter::error(null, 'Kamu belum membeli paket tryout', 200);
+        // }
 
         // Ambil semua tryout yang dimulai oleh user
         $startedTryouts = [];
