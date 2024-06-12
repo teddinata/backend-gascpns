@@ -89,38 +89,44 @@ class User extends Authenticatable
 
     public function getAgeAttribute()
     {
-        $birthdate = Carbon::parse($this->birthdate);
-        $now = Carbon::now();
+        try {
+            // Ensure birthdate is valid
+            $birthdate = Carbon::parse($this->birthdate);
+            $now = Carbon::now();
 
-        // Round years to nearest whole number
-        $years = round($birthdate->diffInYears($now));
+            // Calculate years, months, and days
+            $years = round($birthdate->diffInYears($now));
+            $months = $birthdate->copy()->addYears($years)->diffInMonths($now);
+            $days = $birthdate->copy()->addYears($years)->addMonths($months)->diffInDays($now);
 
-        $months = $birthdate->copy()->addYears($years)->diffInMonths($now);
-        $days = $birthdate->copy()->addYears($years)->addMonths($months)->diffInDays($now);
+            // Ensure months and days are rounded to whole numbers for clarity
+            $roundedMonths = floor($months);
+            $roundedDays = floor($days);
 
-        // Ensure months and days are rounded to whole numbers for clarity
-        $roundedMonths = floor($months);
-        $roundedDays = floor($days);
+            $ageString = "";
 
-        $ageString = "";
+            // Display years as rounded whole numbers
+            if ($years > 0) {
+                $ageString .= "$years tahun";
+            }
 
-        // Display years as rounded whole numbers
-        if ($years > 0) {
-            $ageString .= "$years tahun";
+            // Only add months if non-zero
+            if ($roundedMonths > 0) {
+                $ageString .= " $roundedMonths bulan";
+            }
+
+            // Only add days if non-zero
+            if ($roundedDays > 0) {
+                $ageString .= " $roundedDays hari";
+            }
+
+            return $ageString;
+        } catch (\Exception $e) {
+            // Handle exceptions gracefully
+            return "Invalid birthdate";
         }
-
-        // Only add months if non-zero
-        if ($roundedMonths > 0) {
-            $ageString .= " $roundedMonths bulan";
-        }
-
-        // Only add days if non-zero
-        if ($roundedDays > 0) {
-            $ageString .= " $roundedDays hari";
-        }
-
-        return $ageString;
     }
+
 
 
 

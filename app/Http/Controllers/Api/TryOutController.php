@@ -74,7 +74,7 @@ class TryOutController extends Controller
         // Ambil semua paket tryout dari user
         $myTryouts = $user->enrolledPackageTryouts()
             ->whereHas('packageTryOuts', function ($query) {
-                $query->where('is_premium', true);
+                $query->where('is_premium', 1);
             })
             ->with(['packageTryOuts.course.category', 'packageTryOuts.course.questions'])
             ->get();
