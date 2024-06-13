@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\VirtualAccountPaymentController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RetailOutletPaymentController;
+use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\SettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +27,11 @@ use App\Http\Controllers\Api\RetailOutletPaymentController;
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+Route::get('provinces', [LocationController::class, 'getProvinces']);
+Route::get('regencies/{province_id}', [LocationController::class, 'getRegencies']);
+Route::get('districts/{regency_id}', [LocationController::class, 'getDistricts']);
+Route::get('villages/{district_id}', [LocationController::class, 'getVillages']);
 
 Route::post('/tryout/transactions/va-payment/callback', [VirtualAccountPaymentController::class, 'vaCallback']);
 Route::post('/tryout/transactions/qris/callback', [QrisPaymentController::class, 'qrisCallback']);
@@ -128,6 +135,12 @@ Route::group(['prefix' => 'v1'], function () {
 
         // route for transaction detail history for user login
         Route::get('/transactions/history/{transactionId}', [TransactionController::class, 'historyDetail']);
+
+        // route edit profile
+        Route::post('/profile/edit', [SettingsController::class, 'updateAccountInfo']);
+
+        // route change password
+        Route::post('/profile/change-password', [SettingsController::class, 'changePassword']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])

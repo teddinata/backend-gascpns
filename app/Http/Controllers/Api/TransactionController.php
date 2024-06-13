@@ -19,6 +19,7 @@ use Xendit\QRCode;
 // use Illuminate\Support\Carbon;
 use Carbon\Carbon;
 use PSpell\Config;
+use Illuminate\Support\Facades\Storage;
 
 class TransactionController extends Controller
 {
@@ -299,6 +300,28 @@ class TransactionController extends Controller
             ->where('student_id_transaction', auth()->id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
+
+        // if cover path found in package
+        $transactions->getCollection()->each(function ($transaction) {
+            if ($transaction->package && $transaction->package->cover_path) {
+                // Check if cover_path is already a full URL
+                if (!preg_match('/^https?:\/\//', $transaction->package->cover_path)) {
+                    $transaction->package->cover_path = url('storage/' . $transaction->package->cover_path);
+                }
+            }
+        });
+
+        // if payment expired is less than current time then change status to EXPIRED
+        $transactions->getCollection()->each(function ($transaction) {
+            $paymentExpired = Carbon::parse($transaction->payment_expired)->setTimezone('Asia/Jakarta');
+            $currentTime = Carbon::now('Asia/Jakarta');
+
+            if ($transaction->payment_status !== 'PAID' && $currentTime->gt($paymentExpired)) {
+                // Hanya jika status belum dibayar dan sudah terlambat, ubah status menjadi EXPIRED
+                $transaction->payment_status = 'EXPIRED';
+                $transaction->save(); // Simpan perubahan status
+            }
+        });
 
         return ResponseFormatter::success($transactions, 'Transaction history');
     }

@@ -38,6 +38,10 @@ class User extends Authenticatable
         'referral_code',
         'otp',
         'otp_expired_at',
+        'province_id',
+        'regency_id',
+        'district_id',
+        'village_id',
     ];
 
     /**
