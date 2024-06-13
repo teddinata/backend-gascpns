@@ -198,13 +198,13 @@ class TransactionController extends Controller
             $transaction->package->cover_path = asset('storage/' . $transaction->package->cover_path);
         }
 
-        $paymentExpired = Carbon::parse($transaction->payment_expired)->setTimezone('UTC');
-        $currentTime = Carbon::now('UTC');
+        $paymentExpired = Carbon::parse($transaction->payment_expired);
+        $currentTime = Carbon::now();
 
-        // check jika ada payment expired yang sudah lewat dari waktu sekarang maka ubah status menjadi EXPIRED
-        if ($currentTime->gt($paymentExpired)) {
+        // check jika ada transaction yang belum success dan payment expired yang sudah lewat dari waktu sekarang maka ubah status menjadi EXPIRED
+        if ($transaction->payment_status !== 'PAID' && $transaction->payment_status !== 'CANCELLED' && $currentTime->gt($paymentExpired)) {
             $transaction->payment_status = 'EXPIRED';
-            $transaction->save();
+            $transaction->save(); // Simpan perubahan status
         }
 
         if (!$transaction) {
@@ -215,6 +215,40 @@ class TransactionController extends Controller
 
         return ResponseFormatter::success($transaction, 'Transaction detail');
     }
+
+    /**
+     * Cancel the specified transaction.
+     */
+    public function cancel(string $id)
+    {
+        $transaction = Transaction::find($id);
+
+        if (!$transaction) {
+            return ResponseFormatter::error([
+                'message' => 'Transaction not found',
+            ], 'Transaction not found', 404);
+        }
+
+        if ($transaction->payment_status !== 'UNPAID') {
+            return ResponseFormatter::error([
+                'message' => 'Tidak dapat membatalkan transaksi yang sudah dibayar atau sudah dibatalkan',
+            ], 'Invalid Transaction Status', 422);
+        }
+
+        try {
+            // transaction expired time carbon format timestamp
+            $transaction->payment_status = 'CANCELLED';
+            $transaction->payment_expired = Carbon::now();
+            $transaction->payment_response = 'Transaction cancelled by user';
+            $transaction->payment_number = 'Transaction cancelled by user';
+            $transaction->save();
+
+            return ResponseFormatter::success($transaction, 'Transaction cancelled successfully');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error($e->getMessage(), 'Transaction Cancellation Failed');
+        }
+    }
+
 
     // transaction payment method menggunakan saldo user yang sudah login dan membeli paket tryout yang diinginkan user tersebut
     public function saldoTransaction(Request $request)
@@ -251,7 +285,7 @@ class TransactionController extends Controller
         // }
 
         // check transaction status
-        if ($transaction->payment_status != 'PENDING') {
+        if ($transaction->payment_status === 'PAID') {
             return ResponseFormatter::error([
                 'message' => 'Transaction already paid',
             ], 'Transaction already paid', 422);
@@ -316,7 +350,7 @@ class TransactionController extends Controller
             $paymentExpired = Carbon::parse($transaction->payment_expired)->setTimezone('Asia/Jakarta');
             $currentTime = Carbon::now('Asia/Jakarta');
 
-            if ($transaction->payment_status !== 'PAID' && $currentTime->gt($paymentExpired)) {
+            if ($transaction->payment_status !== 'PAID' && $transaction->payment_status !== 'CANCELLED' && $currentTime->gt($paymentExpired)) {
                 // Hanya jika status belum dibayar dan sudah terlambat, ubah status menjadi EXPIRED
                 $transaction->payment_status = 'EXPIRED';
                 $transaction->save(); // Simpan perubahan status

@@ -280,4 +280,18 @@ class AuthController extends Controller
             ], 'Logout failed', 500);
         }
     }
+
+    // user login
+    public function profile(Request $request)
+    {
+        $user = Auth::user();
+
+        // if user have avatar
+        if ($user->avatar) {
+            $user->avatar = url('storage/' . $user->avatar);
+        } else {
+            $user->avatar = url('https://ui-avatars.com/api/?name=' . $user->name);
+        }
+        return ResponseFormatter::success($user, 'Data profile user berhasil diambil');
+    }
 }

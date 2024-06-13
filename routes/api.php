@@ -25,8 +25,22 @@ use App\Http\Controllers\Api\SettingsController;
 */
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    $user = Auth::user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], 401);
+    }
+
+    // if user has avatar
+    if ($user->avatar) {
+        $user->avatar = url('storage/' . $user->avatar);
+    } else {
+        $user->avatar = url('https://ui-avatars.com/api/?name=' . urlencode($user->name));
+    }
+
+    return response()->json($user);
 })->middleware('auth:sanctum');
+
 
 Route::get('provinces', [LocationController::class, 'getProvinces']);
 Route::get('regencies/{province_id}', [LocationController::class, 'getRegencies']);
@@ -114,6 +128,8 @@ Route::group(['prefix' => 'v1'], function () {
 
         // endpoint payment menggunakan saldo user
         Route::post('/tryout/transactions/saldo', [TransactionController::class, 'saldoTransaction']);
+
+        Route::post('tryout/transactions/{id}/cancel', [TransactionController::class, 'cancel']);
 
         // endpoint rankings tryout user login
         Route::get('/rankings-by-package', [TryOutController::class, 'rankingsByPackage']);

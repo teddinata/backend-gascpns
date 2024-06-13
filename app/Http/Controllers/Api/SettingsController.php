@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
+// storage
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -37,13 +39,28 @@ class SettingsController extends Controller
             'regency_id' => 'nullable|integer',
             'district_id' => 'nullable|integer',
             'village_id' => 'nullable|integer',
+            'username' => 'nullable|string|max:255|unique:users,username,' . $user->id,
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ]);
 
         if ($validator->fails()) {
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
 
-        $user->update($request->all());
+        $data = $request->all();
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            $path = $file->store('avatars', 'public');
+            $data['avatar'] = $path;
+
+            // Delete the old avatar if it exists
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+        }
+
+        $user->update($data);
 
         return ResponseFormatter::success($user, 'Account updated');
     }
