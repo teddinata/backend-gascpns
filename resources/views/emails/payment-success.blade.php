@@ -13,13 +13,16 @@
       padding: 0;
     }
     .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        max-width: 95%; /* Adjust for smaller screens */
+        margin: 0 auto;
+        box-sizing: border-box;
     }
     .header {
       text-align: center;
@@ -44,27 +47,12 @@
       line-height: 1.6;
       margin: 10px 0;
     }
-
-    .header-bot {
-      text-align: center;
-      padding: 20px 0;
-      background-color: #FFFFFF;
-      color: white;
-    }
-    .header-bot img {
-      width: 450px;
-      margin-bottom: 10px;
-    }
-    .header-bot h1 {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 700;
-    }
     .order-details {
       margin: 20px 0;
       background-color: #f9f9f9;
       padding: 15px;
       border-radius: 8px;
+      width: 100%;
     }
     .order-details h2 {
       color: #0BA7E3;
@@ -78,9 +66,10 @@
     }
     .order-details table th,
     .order-details table td {
-      padding: 12px;
       border: 1px solid #e5e5e5;
       text-align: left;
+      padding: 8px; /* Reduce padding for smaller screens */
+        word-break: break-word;
     }
     .order-details table th {
       background-color: #f1f1f1;
@@ -89,26 +78,72 @@
     .order-details table td {
       background-color: #ffffff;
     }
-    .footer {
+
+    .header-img {
       text-align: center;
-      padding: 20px;
+      padding: 20px 0;
+      background-color: #FFFFFF;
+      color: white;
+      margin-top: 10px;
+    }
+    .header-img img {
+      width: 225px;
+      margin-bottom: 10px;
+    }
+    .header-img h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .header-bot {
+      text-align: center;
+      padding: 20px 0;
       background-color: #0BA7E3;
       color: white;
-      border-top: 5px solid #0BA7E3;
-      font-size: 14px;
+      margin-top: 10px;
     }
-    .btn {
-      display: inline-block;
-      padding: 10px 20px;
+    .header-bot img {
+      width: 225px;
+      margin-bottom: 10px;
+    }
+    .header-bot h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .footer {
+        text-align: center;
+      padding: 20px 0;
       background-color: #0BA7E3;
       color: white;
-      text-decoration: none;
-      border-radius: 8px;
-      font-weight: 500;
-      margin-top: 20px;
     }
-    .btn:hover {
-      background-color: #0056b3;
+
+    /* Stack table rows on smaller screens */
+    @media (max-width: 400px) {
+        .container {
+            padding: 10px; /* Reduce padding for smaller screens */
+        }
+        .order-details table {
+            display: block;
+            overflow-x: auto; /* Enable horizontal scrolling if needed */
+        }
+        .order-details table thead, .order-details table tbody, .order-details table tr, .order-details table th, .order-details table td {
+            display: block; /* Make each cell full-width */
+        }
+        .order-details table th {
+            text-align: left;
+        }
+        .order-details table td {
+            text-align: right; /* Align values for better readability */
+        }
+
+        .footer {
+            padding: 10px; /* Reduce padding for smaller screens */
+            font-size: 12px; /* Optionally adjust font size */
+            text-align: center;
+            width: auto;
+        }
     }
   </style>
 </head>
@@ -155,10 +190,10 @@
     <h4>Tim {{ config('app.name') }}</h4>
     </div>
 
-    <div class="header-bot">
+    <div class="header-img">
       <img src="{{ $message->embed(public_path('images/logo/success.jpg')) }}" alt="Logo Bisnis Anda" width="400">
     </div>
-    <div class="footer">
+    <div class="header-bot">
       &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
     </div>
   </div>
