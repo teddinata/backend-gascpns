@@ -29,7 +29,7 @@
       color: white;
     }
     .header img {
-      width: 150px;
+      width: 350px;
       margin-bottom: 10px;
     }
     .header h1 {
@@ -100,7 +100,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
+      <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="300">
     </div>
     <div class="content">
     <h1>Konfirmasi Pembelian</h1>

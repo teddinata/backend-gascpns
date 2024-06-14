@@ -28,7 +28,7 @@
       color: white;
     }
     .header img {
-      width: 150px;
+      width: 350px;
       margin-bottom: 10px;
     }
     .header h1 {
@@ -114,7 +114,7 @@
 </head>
 <body>
   <div class="container">
-    <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
+    <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="300">
     <div class="content">
     <h1>Selamat!</h1>
       <p>Hai, <strong>{{ $user->name }}</strong>!</p>
