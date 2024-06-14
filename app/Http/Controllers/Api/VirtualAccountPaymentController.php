@@ -81,11 +81,14 @@ class VirtualAccountPaymentController extends Controller
              // Send email
             Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
 
+            // dd($transaction);
+
             $responseData = [
                 'transaction_id' => $transaction->id,
+                'payment_response' => $xenditResponse,
             ];
 
-            $responseData['payment_response'] = $xenditResponse;
+            // $responseData['payment_response'] = $xenditResponse;
 
             DB::commit();
             return ResponseFormatter::success($responseData, 'Anda memilih metode pembayaran Virtual Account, silakan selesaikan pembayaran Anda');
