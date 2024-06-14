@@ -28,7 +28,7 @@
       color: white;
     }
     .header img {
-      width: 350px;
+      width: 225px;
       margin-bottom: 10px;
     }
     .header h1 {
