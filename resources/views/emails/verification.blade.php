@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Verifikasi Email</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+<body style="font-family: Poppins, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; margin: 20px auto;">
         <tr>
             <td align="center" style="padding: 20px;">

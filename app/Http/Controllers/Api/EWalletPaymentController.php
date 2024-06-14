@@ -10,6 +10,10 @@ use App\Helpers\ResponseFormatter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentEmail;
+use App\Mail\SuccessEmail;
 
 
 class EWalletPaymentController extends Controller
@@ -34,6 +38,7 @@ class EWalletPaymentController extends Controller
         }
 
         $transaction = Transaction::findOrFail($request->transaction_id);
+        $user = Auth::user();
 
         // Tentukan channel_code berdasarkan E-wallet yang dipilih oleh pengguna
         $ewalletType = $request->input('ewallet_type');
@@ -121,6 +126,9 @@ class EWalletPaymentController extends Controller
             $transaction->payment_status = 'UNPAID';
             $transaction->save();
 
+            // Send email
+            Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
+
             $responseData = [
                 'transaction_id' => $transaction->id,
                 'payment_response' => $xenditResponse
@@ -163,6 +171,9 @@ class EWalletPaymentController extends Controller
 
                 // Lakukan aksi sesuai kebutuhan Anda
                 $student->packages()->attach($package->id, ['created_by' => '1']);
+
+                // mail to user
+                Mail::to($student->email)->send(new SuccessEmail($student, $trx));
              }
          }
 

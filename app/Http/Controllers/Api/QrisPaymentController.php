@@ -9,6 +9,10 @@ use App\Models\Transaction;
 use App\Helpers\ResponseFormatter;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentEmail;
+use App\Mail\SuccessEmail;
 
 
 class QrisPaymentController extends Controller
@@ -28,6 +32,7 @@ class QrisPaymentController extends Controller
         }
 
         $transaction = Transaction::findOrFail($request->transaction_id);
+        $user = Auth::user();
 
         try {
             DB::beginTransaction();
@@ -59,6 +64,9 @@ class QrisPaymentController extends Controller
             $transaction->payment_status = 'UNPAID';
             $transaction->payment_channel = 'QRIS';
             $transaction->save();
+
+            // Send email
+            Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
 
             $responseData = [
                 'transaction_id' => $transaction->id,
@@ -98,6 +106,9 @@ class QrisPaymentController extends Controller
 
             // Lakukan aksi sesuai kebutuhan Anda
             $student->packages()->attach($package->id, ['created_by' => '1']);
+
+            // mail to user
+            Mail::to($student->email)->send(new SuccessEmail($student, $trx));
         }
         // $transaction->payment_status = "PAID";
         // $transaction->payment_response = json_encode($request->all());

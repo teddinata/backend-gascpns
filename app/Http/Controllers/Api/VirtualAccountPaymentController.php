@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentEmail;
+use App\Mail\SuccessEmail;
 
 class VirtualAccountPaymentController extends Controller
 {
@@ -34,8 +35,9 @@ class VirtualAccountPaymentController extends Controller
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
 
-        $transaction = Transaction::findOrFail($request->transaction_id);
         // $now = new DateTime();
+        $transaction = Transaction::findOrFail($request->transaction_id);
+        $user = Auth::user();
 
         try {
 
@@ -73,6 +75,9 @@ class VirtualAccountPaymentController extends Controller
             $transaction->payment_image = $bank->logo;
             $transaction->payment_status = 'UNPAID';
             $transaction->save();
+
+             // Send email
+            Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
 
             $responseData = [
                 'transaction_id' => $transaction->id,
@@ -132,5 +137,8 @@ class VirtualAccountPaymentController extends Controller
 
         // beri user akses
         $student->packages()->attach($package->id, ['created_by' => '1 ']);
+
+        // mail to user
+        Mail::to($student->email)->send(new SuccessEmail($student, $transaction));
     }
 }
