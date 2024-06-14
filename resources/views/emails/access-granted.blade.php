@@ -114,7 +114,9 @@
 </head>
 <body>
   <div class="container">
-    <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
+    <div class="header">
+        <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
+    </div>
     <div class="content">
     <h1>Selamat!</h1>
       <p>Hai, <strong>{{ $user->name }}</strong>!</p>
