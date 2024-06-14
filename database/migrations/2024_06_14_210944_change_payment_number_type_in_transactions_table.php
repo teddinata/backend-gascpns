@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             //
-            $table->text('payment_number')->change();
+            $table->text('payment_number')->change()->nullable();
         });
     }
 
@@ -24,7 +24,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             //
-            $table->string('payment_number', 255)->change();
+            $table->string('payment_number', 255)->change()->nullable();
         });
     }
 };
