@@ -44,6 +44,22 @@
       line-height: 1.6;
       margin: 10px 0;
     }
+
+    .header-bot {
+      text-align: center;
+      padding: 20px 0;
+      background-color: #FFFFFF;
+      color: white;
+    }
+    .header-bot img {
+      width: 450px;
+      margin-bottom: 10px;
+    }
+    .header-bot h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+    }
     .order-details {
       margin: 20px 0;
       background-color: #f9f9f9;
@@ -137,6 +153,10 @@
       {{-- cheers --}}
       <h4 style="margin-top: 20px;">Cheers,</h4>
     <h4>Tim {{ config('app.name') }}</h4>
+    </div>
+
+    <div class="header-bot">
+      <img src="{{ $message->embed(public_path('images/logo/success.jpg')) }}" alt="Logo Bisnis Anda" width="400">
     </div>
     <div class="footer">
       &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.

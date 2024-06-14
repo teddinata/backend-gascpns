@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Service\XenditService;
 use App\Models\Transaction;
 use App\Helpers\ResponseFormatter;
+use App\Mail\AccessGranted;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -167,13 +168,17 @@ class EWalletPaymentController extends Controller
 
                 // Dapatkan pengguna dan paket yang terkait dengan transaksi
                 $student = $trx->student;
+                $user    = $trx->studentTransaction;
                 $package = $trx->package;
 
                 // Lakukan aksi sesuai kebutuhan Anda
                 $student->packages()->attach($package->id, ['created_by' => '1']);
 
                 // mail to user
-                Mail::to($student->email)->send(new SuccessEmail($student, $trx));
+                Mail::to($user->email)->send(new SuccessEmail($user, $trx));
+                Mail::to($student->email)->send(new AccessGranted($student, $trx));
+
+
              }
          }
 

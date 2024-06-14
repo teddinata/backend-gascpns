@@ -14,6 +14,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PaymentEmail;
 use App\Mail\SuccessEmail;
+use App\Mail\AccessGranted;
+
 
 class VirtualAccountPaymentController extends Controller
 {
@@ -126,6 +128,7 @@ class VirtualAccountPaymentController extends Controller
         //     $student->packages()->attach($package->id, ['created_by' => '1 ']);
         // }
 
+
         $transaction->payment_status = "PAID";
         $transaction->payment_response = json_encode($request->all());
         $transaction->payment_date = now();
@@ -133,12 +136,16 @@ class VirtualAccountPaymentController extends Controller
 
         // Dapatkan pengguna dan paket yang terkait dengan transaksi
         $student = $transaction->student;
+        $user    = $transaction->studentTransaction;
         $package = $transaction->package;
 
         // beri user akses
         $student->packages()->attach($package->id, ['created_by' => '1 ']);
 
+        // mail to student
+        Mail::to($student->email)->send(new AccessGranted($student, $transaction));
+
         // mail to user
-        Mail::to($student->email)->send(new SuccessEmail($student, $transaction));
+        Mail::to($user->email)->send(new SuccessEmail($user, $transaction));
     }
 }

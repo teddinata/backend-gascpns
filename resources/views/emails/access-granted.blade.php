@@ -1,10 +1,9 @@
-<!-- Blade Template -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Konfirmasi Pembelian</title>
+  <title>Selamat! {{ $transaction->package->name }} Sudah Bisa Diakses</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
     body {
@@ -44,6 +43,22 @@
       color: #333333;
       line-height: 1.6;
       margin: 10px 0;
+    }
+
+    .header-bot {
+      text-align: center;
+      padding: 20px 0;
+      background-color: #ffffff;
+      color: white;
+    }
+    .header-bot img {
+      width: 450px;
+      margin-bottom: 10px;
+    }
+    .header-bot h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
     }
     .order-details {
       margin: 20px 0;
@@ -99,56 +114,55 @@
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
-    </div>
+    <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
     <div class="content">
-    <h1>Konfirmasi Pembelian</h1>
+    <h1>Selamat!</h1>
       <p>Hai, <strong>{{ $user->name }}</strong>!</p>
-        <p>Berikut adalah detail pembelianmu:</p>
+      <p>Yeay! Paketmu <strong>{{ $transaction->package->name }}</strong> sudah bisa kamu akses. Sekarang kamu sudah bisa mengakses tryout dan materi di Dashboard kamu.</p>
       <div class="order-details">
-        <h2>Detail Pembelian</h2>
+        <h2>Detail Paket</h2>
         <table>
-          <tr>
-            <th>Order ID</th>
-            <td><strong>{{ $transaction->invoice_code }}</strong></td>
-          </tr>
           <tr>
             <th>Paket Transaksi</th>
             <td><strong>{{ $transaction->package->name }}</strong></td>
           </tr>
-          <tr>
-            <th>Nomor Pembayaran</th>
-            <td>
-                <strong>
-                    {{ $transaction->payment_number }}
-                </strong>
-            </td>
-          </tr>
-          <tr>
-            <th>Pembayaran</th>
-            <td><strong>{{ $transaction->payment_channel }} - {{ $transaction->payment_method }}</strong></td>
-          </tr>
-          <tr>
-            <th>Total Pembayaran</th>
-            <td><strong>Rp{{ number_format($transaction->total_amount, 0, ',', '.') }}</strong></td>
-          </tr>
-          <tr>
-            <th>Batas Bayar</th>
-            <td>
-                <strong>
-                {{ \Carbon\Carbon::parse($transaction->payment_expired)->setTimezone('Asia/Jakarta')->format('d F Y H:i') }} WIB
-                </strong>
-            </td>
-          </tr>
         </table>
       </div>
-      <p>Mohon segera lakukan pembayaran sebelum batas waktu habis.</p>
-      <p>Terima Kasih! Semoga lolos CPNS tahun ini, ya!</p>
-    </div>
+
+      <div class="order-details">
+        <h2>Detail Pembeli</h2>
+        <table>
+            <tr>
+                <th>Order ID</th>
+                <td><strong>{{ $transaction->invoice_code }}</strong></td>
+            </tr>
+            <tr>
+                <th>Nama Pembeli</th>
+                <td><strong>{{ $transaction->studentTransaction->name }}</strong></td>
+            </tr>
+            <tr>
+                <th>Email Pembeli</th>
+                <td><strong>{{ $transaction->studentTransaction->email }}</strong></td>
+            </tr>
+            <tr>
+                <th>Paket Transaksi</th>
+                <td><strong>{{ $transaction->package->name }}</strong></td>
+            </tr>
+            <tr>
+                <th>Total Pembayaran</th>
+                <td><strong>Rp{{ number_format($transaction->total_amount, 0, ',', '.') }}</strong></td>
+            </tr>
+        </table>
+      </div>
       {{-- cheers --}}
     <h4 style="margin-top: 20px;">Cheers,</h4>
     <h4>Tim {{ config('app.name') }}</h4>
+    </div>
+
+    <div class="header-bot">
+        <img src="{{ $message->embed(public_path('images/logo/success.jpg')) }}" alt="Logo Bisnis Anda" width="400">
+    </div>
+
     <div class="footer">
       &copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
     </div>
