@@ -153,7 +153,7 @@
         <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
     </div>
     <div class="content">
-    <h1>Selamat!</h1>
+    <h1>Selamat! {{ $transaction->package->name }} Sudah Bisa Diakses</h1>
       <p>Hai, <strong>{{ $user->name }}</strong>!</p>
       <p>Yeay! Paketmu <strong>{{ $transaction->package->name }}</strong> sudah bisa kamu akses. Sekarang kamu sudah bisa mengakses tryout dan materi di Dashboard kamu.</p>
       <div class="order-details">

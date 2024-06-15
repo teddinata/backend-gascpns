@@ -153,7 +153,7 @@
       <img src="{{ $message->embed(public_path('images/logo/logo-gascpns.png')) }}" alt="Logo Bisnis Anda" width="200">
     </div>
     <div class="content">
-    <h1>Terima Kasih!</h1>
+    <h1>Terima Kasih Pembelian Sudah Berhasil</h1>
       <p>Hai, <strong>{{ $user->name }}</strong>!</p>
       <p>Yeay! Pembelianmu sudah berhasil! Terima kasih telah mempercayakan <strong>GASCPNS</strong> untuk persiapan CPNS kamu.</p>
       <div class="order-details">

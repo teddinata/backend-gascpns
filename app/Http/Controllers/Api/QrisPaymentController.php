@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PaymentEmail;
 use App\Mail\SuccessEmail;
+use App\Services\NotificationService;
 
 
 class QrisPaymentController extends Controller
@@ -69,6 +70,8 @@ class QrisPaymentController extends Controller
             // Send email
             Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
 
+            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket ' . $transaction->package->name . ' menggunakan ' . $request->payment_method . ' menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . now()->parse($transaction->payment_expired)->setTimezone('Asia/Jakarta')->format('d F Y H:i:s'), 'https://staging.gascpns.com/member/riwayat-transaksi');
+
             $responseData = [
                 'transaction_id' => $transaction->id,
             ];
@@ -109,9 +112,16 @@ class QrisPaymentController extends Controller
             // Lakukan aksi sesuai kebutuhan Anda
             $student->packages()->attach($package->id, ['created_by' => '1']);
 
-            // mail to user
+            // Send notification to user
+            NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
+
+            // Send notification to student
+            NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+
+                // mail to user
             Mail::to($user->email)->send(new SuccessEmail($user, $trx));
             Mail::to($student->email)->send(new AccessGranted($student, $trx));
+
         }
         // $transaction->payment_status = "PAID";
         // $transaction->payment_response = json_encode($request->all());

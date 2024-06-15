@@ -20,6 +20,10 @@ use Xendit\QRCode;
 use Carbon\Carbon;
 use PSpell\Config;
 use Illuminate\Support\Facades\Storage;
+use App\Services\NotificationService;
+use App\Mail\AccessGranted;
+use App\Mail\SuccessEmail;
+use Illuminate\Support\Facades\Mail;
 
 class TransactionController extends Controller
 {
@@ -300,6 +304,7 @@ class TransactionController extends Controller
 
         // student
         $student = User::find($transaction->student_id);
+        $user    = User::find($transaction->student_id_transaction);
 
         try {
             DB::beginTransaction();
@@ -316,6 +321,14 @@ class TransactionController extends Controller
 
             // update course to student
             $student->packages()->attach($transaction->package_id, ['created_by' => auth()->id()]);
+
+            NotificationService::sendNotification($user->id, 'Pembelian Paket Berhasil', 'Pembelian paket ' . $transaction->package->name . ' menggunakan saldo berhasil. Saldo Anda saat ini Rp' . $user->wallet_balance, 'https://staging.gascpns.com/member/my-tryout');
+
+            // mail to student
+            Mail::to($student->email)->send(new AccessGranted($student, $transaction));
+
+            // mail to user
+            Mail::to($user->email)->send(new SuccessEmail($user, $transaction));
 
             DB::commit();
 

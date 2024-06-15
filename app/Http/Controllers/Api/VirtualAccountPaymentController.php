@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\PaymentEmail;
 use App\Mail\SuccessEmail;
 use App\Mail\AccessGranted;
+use App\Services\NotificationService;
 
 
 class VirtualAccountPaymentController extends Controller
@@ -80,6 +81,9 @@ class VirtualAccountPaymentController extends Controller
 
              // Send email
             Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
+
+            // send notification to user
+            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket ' . $transaction->package->name . ' menggunakan ' . $request->bank_code . ' menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . now()->parse($transaction->payment_expired)->setTimezone('Asia/Jakarta')->format('d F Y H:i:s'), 'https://staging.gascpns.com/member/riwayat-transaksi');
 
             // dd($transaction);
 
@@ -150,5 +154,11 @@ class VirtualAccountPaymentController extends Controller
 
         // mail to user
         Mail::to($user->email)->send(new SuccessEmail($user, $transaction));
+
+        // Send notification to user
+        NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
+
+        // Send notification to student
+        NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
     }
 }

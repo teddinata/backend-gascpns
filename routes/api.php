@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\RetailOutletPaymentController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\SettingsController;
+use App\Http\Controllers\Api\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -157,6 +158,12 @@ Route::group(['prefix' => 'v1'], function () {
 
         // route change password
         Route::post('/profile/change-password', [SettingsController::class, 'changePassword']);
+
+        // route for user notifications
+        Route::post('/notifications/send-admin', [NotificationController::class, 'sendAdminNotification']);
+        Route::post('/notifications/send', [NotificationController::class, 'send']);
+        Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
