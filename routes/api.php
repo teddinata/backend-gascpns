@@ -164,6 +164,7 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('/notifications/send', [NotificationController::class, 'send']);
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
