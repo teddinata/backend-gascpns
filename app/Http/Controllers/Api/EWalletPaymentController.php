@@ -26,10 +26,9 @@ class EWalletPaymentController extends Controller
     public function ewalletTransaction(Request $request, XenditService $xenditService)
     {
         $validator = Validator::make($request->all(), [
-            'transaction_id' => 'required|exists:transactions,id',
+            'transaction_ids' => 'required|array',
+            'transaction_ids.*' => 'exists:transactions,id',
             'payment_method' => 'required|in:EWALLET',
-            // 'ewallet' => 'required|in:OVO,DANA,LinkAja',
-            // 'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA|url',
             'ewallet_type' => 'required|in:DANA,OVO,LINKAJA',
             'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA|url',
             'mobile_number' => 'required_if:ewallet_type,OVO'
@@ -39,10 +38,10 @@ class EWalletPaymentController extends Controller
             return ResponseFormatter::error($validator->errors(), 'Validation Error', 422);
         }
 
-        $transaction = Transaction::findOrFail($request->transaction_id);
+        $transactions = Transaction::whereIn('id', $request->transaction_ids)->get();
+        $totalAmount = $transactions->sum('total_amount');
         $user = Auth::user();
 
-        // Tentukan channel_code berdasarkan E-wallet yang dipilih oleh pengguna
         $ewalletType = $request->input('ewallet_type');
         $channelCode = '';
         $channelProperties = [];
@@ -52,21 +51,14 @@ class EWalletPaymentController extends Controller
 
             if ($ewalletType === 'DANA') {
                 $channelCode = 'ID_DANA';
-
-                // Dana menggunakan "success_redirect_url"
-                // parsing halaman https://ambarrukmo.page.link/Bk1pMEZG5Fk9dncs5 agar tidak menjadi intent
-                $channelProperties['success_redirect_url'] = $request->input('success_redirect_url'); // Ganti dengan URL redirect yang sesuai
+                $channelProperties['success_redirect_url'] = $request->input('success_redirect_url');
                 $channelProperties['success_redirect_url'] = parse_url($channelProperties['success_redirect_url'], PHP_URL_SCHEME) . '://' . parse_url($channelProperties['success_redirect_url'], PHP_URL_HOST) . parse_url($channelProperties['success_redirect_url'], PHP_URL_PATH);
 
-                // Ambil nomor hp (mobile number) dari input
             } elseif ($ewalletType === 'OVO') {
                 $channelCode = 'ID_OVO';
-
-                // Ambil nomor hp (mobile number) dari input
                 $mobileNumber = $request->input('mobile_number');
-                // Hilangkan karakter selain angka dari nomor ponsel
                 $mobileNumber = preg_replace('/[^0-9]/', '', $mobileNumber);
-                // handle mobile number agar yang diinputkan 0, 62, atau +62 menjadi 62
+
                 if (Str::startsWith($mobileNumber, '+62')) {
                     $mobileNumber = '62' . substr($mobileNumber, 1);
                 } elseif (Str::startsWith($mobileNumber, '62')) {
@@ -76,30 +68,23 @@ class EWalletPaymentController extends Controller
                 } else {
                     $mobileNumber = '62' . $mobileNumber;
                 }
-
-                // Tambahkan nomor hp ke dalam channel_properties
                 $channelProperties['mobile_number'] = $mobileNumber;
             } elseif ($ewalletType === 'LINKAJA') {
                 $channelCode = 'ID_LINKAJA';
-
-                // Tambahkan success_redirect_url ke dalam channel_properties untuk LINKAJA
-                $channelProperties['success_redirect_url'] = 'https://ambarrukmo.page.link/Bk1pMEZG5Fk9dncs5'; // Ganti dengan URL redirect yang sesuai
+                $channelProperties['success_redirect_url'] = $request->input('success_redirect_url');
             } else {
-                // Jika E-wallet yang dipilih tidak valid, berikan respon error
                 $errors = [
                     'message' => 'Invalid E-wallet type.'
                 ];
                 return response()->json($errors, 422);
             }
 
-
-
             $ewalletPayloads = [
-                'reference_id' => "reference-id-" . now()->timestamp, // Gunakan ID event transaction sebagai reference_id
+                'reference_id' => "reference-id-" . now()->timestamp,
                 'currency' => 'IDR',
-                'amount' => (int) $transaction->total_amount,
+                'amount' => (int) $totalAmount,
                 'checkout_method' => 'ONE_TIME_PAYMENT',
-                'channel_code' => $channelCode, // Ganti dengan channel code yang sesuai dengan E-wallet yang ingin digunakan
+                'channel_code' => $channelCode,
                 'channel_properties' => $channelProperties,
                 'metadata' => [
                     'branch_code' => 'tree_branch'
@@ -107,40 +92,35 @@ class EWalletPaymentController extends Controller
             ];
 
             $xenditResponse = $xenditService->createEWallet($ewalletPayloads);
-            // dd($xenditResponse);
-
-            // get image from available_ewallets table
-            $ewallet = DB::table('ewallets')->where('code', $ewalletType)->first();
 
             if (!$xenditResponse || !isset($xenditResponse['status'])) {
                 throw new \Exception('Invalid Xendit response');
             }
 
-            $transaction->payment_method = $request->payment_method . '-' . $ewalletType;
-            $transaction->payment_response = json_encode($xenditResponse);
-            $transaction->payment_token = $xenditResponse['id'];
-            $transaction->payment_expired = now()->addMinutes(15)->format('Y-m-d H:i:s');
-            $transaction->payment_timer = 3600; // 1 jam
-            $transaction->payment_id = $xenditResponse['reference_id'];
-            $transaction->payment_channel = $channelCode;
-            $transaction->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
-            $transaction->payment_image = $ewallet->logo;
-            $transaction->payment_status = 'UNPAID';
-            $transaction->save();
+            $ewallet = DB::table('ewallets')->where('code', $ewalletType)->first();
 
-            // Send email
-            Mail::to($user->email)->send(new PaymentEmail($user, $transaction));
+            foreach ($transactions as $trx) {
+                $trx->payment_method = $request->payment_method . '-' . $ewalletType;
+                $trx->payment_response = json_encode($xenditResponse);
+                $trx->payment_token = $xenditResponse['id'];
+                $trx->payment_expired = now()->addMinutes(15)->format('Y-m-d H:i:s');
+                $trx->payment_timer = 3600; // 1 jam
+                $trx->payment_id = $xenditResponse['reference_id'];
+                $trx->payment_channel = $channelCode;
+                $trx->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
+                $trx->payment_image = $ewallet->logo;
+                $trx->payment_status = 'UNPAID';
+                $trx->save();
+            }
 
-            // send notification to user
-            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket ' . $transaction->package->name . ' menggunakan ' . $ewalletType . ' menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . $transaction->payment_expired, 'https://staging.gascpns.com/member/riwayat-transaksi');
+            Mail::to($user->email)->send(new PaymentEmail($user, $transactions->first()));
 
+            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . $transactions->first()->payment_expired, 'https://staging.gascpns.com/member/riwayat-transaksi');
 
             $responseData = [
-                'transaction_id' => $transaction->id,
+                'transaction_ids' => $request->transaction_ids,
                 'payment_response' => $xenditResponse
             ];
-
-            $responseData['payment_response'] = $xenditResponse;
 
             DB::commit();
             return ResponseFormatter::success($responseData, 'Anda memilih metode pembayaran E-Wallet, silakan selesaikan pembayaran Anda');
@@ -155,42 +135,40 @@ class EWalletPaymentController extends Controller
      * Callback for Xendit E-Wallet payment.
      */
 
-     public function ewalletCallback(Request $request)
-     {
-         if ($request->header("x-callback-token") != env("CALLBACK_XENDIT_TOKEN")) {
-             abort(403);
-         }
+    public function ewalletCallback(Request $request)
+    {
+        if ($request->header("x-callback-token") != env("CALLBACK_XENDIT_TOKEN")) {
+            abort(403);
+        }
 
-         if($request->event == "ewallet.capture") {
-             $transaction = Transaction::where('payment_token', $request->data['id'])->get();
-            //  $transaction = Transaction::where('payment_id', $request->reference_id)->get();
+        if ($request->event == "ewallet.capture") {
+            $transactions = Transaction::where('payment_token', $request->data['id'])->get();
 
-             foreach ($transaction as $trx) {
+            if ($transactions->isEmpty()) {
+                abort(404, 'Transaction not found');
+            }
+
+            $firstTransaction = $transactions->first();
+            $user = $firstTransaction->studentTransaction;
+            $package = $firstTransaction->package;
+
+            foreach ($transactions as $trx) {
                 $trx->payment_status = "PAID";
                 $trx->payment_response = json_encode($request->all());
                 $trx->payment_date = now();
                 $trx->save();
 
-                // Dapatkan pengguna dan paket yang terkait dengan transaksi
                 $student = $trx->student;
-                $user    = $trx->studentTransaction;
-                $package = $trx->package;
 
-                // Lakukan aksi sesuai kebutuhan Anda
-                $student->packages()->attach($package->id, ['created_by' => '1']);
+                $student->packages()->attach($package->id, ['created_by' => '1 ']);
 
-                // Send notification to user
-                NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
-
-                // Send notification to student
-                NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
-
-                // mail to user
-                Mail::to($user->email)->send(new SuccessEmail($user, $trx));
                 Mail::to($student->email)->send(new AccessGranted($student, $trx));
+                NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+            }
 
-             }
-         }
+            NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
+            Mail::to($user->email)->send(new SuccessEmail($user, $firstTransaction));
+        }
+    }
 
-     }
 }

@@ -59,8 +59,8 @@ class TransactionController extends Controller
         $validator = Validator::make($request->all(), [
             'package_id' => 'required|exists:packages,id',
             'quantity' => 'required|integer',
-            'email' => 'required',
-            'details' => 'nullable|array',
+            'email' => 'required|array',
+            'email.*' => 'required|email',
         ]);
 
         // check validasi request jika gagal
@@ -68,6 +68,13 @@ class TransactionController extends Controller
             return ResponseFormatter::error([
                 'message' => 'Validation Error',
                 'error' => $validator->errors(),
+            ], 'Validation Error', 422);
+        }
+
+        // Periksa apakah jumlah email sama dengan quantity
+        if (count($request->email) != $request->quantity) {
+            return ResponseFormatter::error([
+                'message' => 'The number of emails must match the quantity',
             ], 'Validation Error', 422);
         }
 
@@ -87,105 +94,55 @@ class TransactionController extends Controller
 
         // Menggabungkan semua komponen untuk membuat invoice code
         $invoiceCode = 'GAS-' . $date . $randomString;
-
-        // invoice id GAS2024052600001
-        // generate random number
         $invoiceId = 'GAS' . date('Ymd') . str_pad(mt_rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        $fixedPrice = $package->discount ?? $package->price;
 
-        // check user available menggunakan email
-        $student = User::where('email', $request->email)->first();
-
-        // check user
-        if (!$student) {
-            return ResponseFormatter::error([
-                'message' => 'Email Siswa tidak ditemukan',
-            ], 'Email Siswa tidak ditemukan', 422);
-        }
-
-        // pengecekan request email dengan quantity apakah sama atau belum
-        // Periksa apakah jumlah email sama dengan quantity
-        $emailCount = is_array($request->email) ? count($request->email) : 1;
-        if ($request->quantity != $emailCount) {
-            return ResponseFormatter::error([
-                'message' => 'Kuantitas email tidak sama dengan quantity',
-            ], 'Kuantitas email tidak sama dengan quantity', 422);
-        }
-
-        // check tryout yang sudah dibeli user
-        if ($student->packages()->where('package_tryout_id', $package->id)->exists()) {
-            return ResponseFormatter::error([
-                'message' => 'Tidak dapat menambahkan paket! Paket ini sudah pernah dibeli.',
-            ], 'Tidak dapat menambahkan paket! Paket ini sudah pernah dibeli.', 422);
-        }
-
-
+        DB::beginTransaction();
         try {
-            // create transaction
-            DB::beginTransaction();
+            $transactions = [];
 
-            // Tetapkan nilai student_id berdasarkan email
-            $student_id = $student->id;
-
-            // Tetapkan nilai student_id_transaction berdasarkan kondisi
-            $student_id_transaction = ($request->email === auth()->user()->email) ? $student_id : auth()->id();
-
-            $fixedPrice = $package->discount ?? $package->price;
-
-            $transaction = Transaction::create([
-                'invoice_code'              => $invoiceCode,
-                'invoice_id'                => $invoiceId,
-                'package_id'                => $package->id,
-                'student_id'                => $student->id,
-                'student_id_transaction'    => $student_id_transaction, // 'student_id_transaction' => $request->student_id_transaction,
-                'quantity'                  => $request->quantity,
-                'total_amount'              => $fixedPrice * $request->quantity,
-                'original_price'            => $package->price,
-                'discount_price'            => $package->discount ?? 0,
-                'payment_status'            => 'PENDING',
-            ]);
-
-            $transactionDetails = [];
             foreach ($request->email as $email) {
-                // Cari pengguna berdasarkan email
                 $student = User::where('email', $email)->first();
 
-                // Pastikan pengguna ditemukan
-                if ($student) {
-                    // Cek apakah pengguna sudah memiliki paket ini
-                    if (!$student->packages()->where('package_tryout_id', $package->id)->exists()) {
-                        // create transaction
-
-
-                        // Menambahkan paket ke pengguna dengan nilai 'created_by' yang sesuai
-                        // $student->packages()->attach($package->id, ['created_by' => auth()->id()]);
-
-                        // Membuat transaction detail
-                        TransactionDetail::create([
-                            'transaction_id' => $transaction->id,
-                            'package_name' => $package->name,
-                            'package_price' => $fixedPrice,
-                            'quantity' => 1, // Hanya satu paket per transaksi
-                            'price' => $fixedPrice,
-                            'original_price' => $package->price,
-                        ]);
-                    }
-                } else {
-                    // Jika pengguna tidak ditemukan, mungkin lakukan penanganan sesuai kebutuhan Anda
-                    // tampilkan pesan error
-                    return ResponseFormatter::error([
-                        'message' => 'Siswa dengan email ' . $email . ' tidak ditemukan',
-                    ], 'Siswa dengan email ' . $email . ' tidak ditemukan', 422);
+                if (!$student) {
+                    throw new \Exception('Email ' . $email . ' not found');
                 }
+
+                if ($student->packages()->where('package_tryout_id', $package->id)->exists()) {
+                    return ResponseFormatter::error([
+                        'message' => 'Paket sudah pernah dibeli oleh user ' . $email,
+                    ], 'Paket sudah pernah dibeli oleh user ' . $email, 422);
+                }
+
+
+                $transaction = Transaction::create([
+                    'invoice_code' => $invoiceCode,
+                    'invoice_id' => $invoiceId,
+                    'package_id' => $package->id,
+                    'student_id' => $student->id,
+                    'student_id_transaction' => auth()->id(),
+                    'quantity' => 1,
+                    'total_amount' => $fixedPrice,
+                    'original_price' => $package->price,
+                    'discount_price' => $package->discount ?? 0,
+                    'payment_status' => 'PENDING',
+                    // External ID akan diatur nanti
+                ]);
+
+                TransactionDetail::create([
+                    'transaction_id' => $transaction->id,
+                    'package_name' => $package->name,
+                    'package_price' => $package->price, // Menggunakan price di sini
+                    'quantity' => 1, // Hanya satu paket per transaksi
+                    'price' => $package->price, // Menggunakan price di sini
+                    'original_price' => $package->price,
+                ]);
+
+                $transactions[] = $transaction;
             }
 
-            // $student->packages()->attach($package->id, ['created_by' => auth()->id()]);
-
-            TransactionDetail::insert($transactionDetails);
-
-
             DB::commit();
-
-            return ResponseFormatter::success($transaction, 'Transaction Success');
+            return ResponseFormatter::success(['transactions' => $transactions], 'Transactions created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             return ResponseFormatter::error($e->getMessage(), 'Transaction Failed');
@@ -257,13 +214,12 @@ class TransactionController extends Controller
     // transaction payment method menggunakan saldo user yang sudah login dan membeli paket tryout yang diinginkan user tersebut
     public function saldoTransaction(Request $request)
     {
-        // validate request data
         $validator = Validator::make($request->all(), [
-            'transaction_id' => 'required|exists:transactions,id',
+            'transaction_ids' => 'required|array',
+            'transaction_ids.*' => 'exists:transactions,id',
             'payment_method' => 'required|in:WALLET',
         ]);
 
-        // check validasi request jika gagal
         if ($validator->fails()) {
             return ResponseFormatter::error([
                 'message' => 'Validation Error',
@@ -271,68 +227,39 @@ class TransactionController extends Controller
             ], 'Validation Error', 422);
         }
 
-        // get transaction
-        $transaction = Transaction::findOrFail($request->transaction_id);
+        $transactions = Transaction::whereIn('id', $request->transaction_ids)->get();
+        $totalAmount = $transactions->sum('total_amount');
+        $user = Auth::user();
 
-        // check transaction
-        if (!$transaction) {
-            return ResponseFormatter::error([
-                'message' => 'Transaction not found',
-            ], 'Transaction not found', 404);
-        }
-
-        // check user
-        // if ($transaction->student_id != auth()->id()) {
-        //     return ResponseFormatter::error([
-        //         'message' => 'Unauthorized',
-        //     ], 'Unauthorized', 401);
-        // }
-
-        // check transaction status
-        if ($transaction->payment_status === 'PAID') {
-            return ResponseFormatter::error([
-                'message' => 'Transaction already paid',
-            ], 'Transaction already paid', 422);
-        }
-
-        // check user balance
-        if (auth()->user()->wallet_balance < $transaction->total_amount) {
+        if ($user->wallet_balance < $totalAmount) {
             return ResponseFormatter::error([
                 'message' => 'Saldo tidak mencukupi',
             ], 'Saldo tidak mencukupi', 422);
         }
 
-        // student
-        $student = User::find($transaction->student_id);
-        $user    = User::find($transaction->student_id_transaction);
-
         try {
             DB::beginTransaction();
 
-            // update transaction
-            $transaction->payment_method = $request->payment_method;
-            $transaction->payment_status = 'PAID';
-            $transaction->save();
+            foreach ($transactions as $trx) {
+                $trx->payment_method = $request->payment_method;
+                $trx->payment_status = 'PAID';
+                $trx->save();
 
-            // update user balance
-            $user = Auth::user();
-            $user->wallet_balance -= $transaction->total_amount;
+                $student = $trx->student;
+                $student->packages()->attach($trx->package_id, ['created_by' => $user->id]);
+
+                NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $trx->package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+                Mail::to($student->email)->send(new AccessGranted($student, $trx));
+            }
+
+            $user->wallet_balance -= $totalAmount;
             $user->save();
 
-            // update course to student
-            $student->packages()->attach($transaction->package_id, ['created_by' => auth()->id()]);
-
-            NotificationService::sendNotification($user->id, 'Pembelian Paket Berhasil', 'Pembelian paket ' . $transaction->package->name . ' menggunakan saldo berhasil. Saldo Anda saat ini Rp' . $user->wallet_balance, 'https://staging.gascpns.com/member/my-tryout');
-
-            // mail to student
-            Mail::to($student->email)->send(new AccessGranted($student, $transaction));
-
-            // mail to user
-            Mail::to($user->email)->send(new SuccessEmail($user, $transaction));
+            NotificationService::sendNotification($user->id, 'Pembelian Paket Berhasil', 'Pembelian paket menggunakan saldo berhasil. Saldo Anda saat ini Rp' . $user->wallet_balance, 'https://staging.gascpns.com/member/my-tryout');
+            Mail::to($user->email)->send(new SuccessEmail($user, $transactions->first()));
 
             DB::commit();
-
-            return ResponseFormatter::success($transaction, 'Transaction paid successfully');
+            return ResponseFormatter::success($transactions, 'Transaction paid successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             return ResponseFormatter::error($e->getMessage(), 'Transaction payment failed');
