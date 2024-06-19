@@ -21,7 +21,7 @@ class EWalletSeeder extends Seeder
                 'country' => 'ID',
                 'currency' => 'IDR',
                 'is_activated' => true,
-                'logo' => 'https://www.xendit.co/wp-content/uploads/2019/11/logo-ovo.png',
+                'logo' => 'https://dashboard.xendit.co/assets/images/ovo-logo.svg',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
@@ -32,7 +32,7 @@ class EWalletSeeder extends Seeder
                 'country' => 'ID',
                 'currency' => 'IDR',
                 'is_activated' => true,
-                'logo' => 'https://www.xendit.co/wp-content/uploads/2019/11/logo-dana.png',
+                'logo' => 'https://dashboard.xendit.co/assets/images/dana-logo.svg',
                 'created_at' => now(),
                 'updated_at' => now()
             ],
@@ -43,7 +43,29 @@ class EWalletSeeder extends Seeder
                 'country' => 'ID',
                 'currency' => 'IDR',
                 'is_activated' => false,
-                'logo' => 'https://www.xendit.co/wp-content/uploads/2019/11/logo-linkaja.png',
+                'logo' => 'https://dashboard.xendit.co/assets/images/linkaja-logo.svg',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'ShopeePay',
+                'code' => 'SHOPEEPAY',
+                'ewallet_type' => 'SHOPEEPAY',
+                'country' => 'ID',
+                'currency' => 'IDR',
+                'is_activated' => false,
+                'logo' => 'https://dashboard.xendit.co/assets/images/shopeepay-logo.svg',
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'name' => 'AstraPay',
+                'code' => 'ASTRAPAY',
+                'ewallet_type' => 'ASTRAPAY',
+                'country' => 'ID',
+                'currency' => 'IDR',
+                'is_activated' => false,
+                'logo' => 'https://dashboard.xendit.co/assets/images/astrapay-logo.svg',
                 'created_at' => now(),
                 'updated_at' => now()
             ],

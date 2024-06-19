@@ -29,8 +29,8 @@ class EWalletPaymentController extends Controller
             'transaction_ids' => 'required|array',
             'transaction_ids.*' => 'exists:transactions,id',
             'payment_method' => 'required|in:EWALLET',
-            'ewallet_type' => 'required|in:DANA,OVO,LINKAJA',
-            'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA|url',
+            'ewallet_type' => 'required|in:DANA,OVO,LINKAJA,SHOPEEPAY,ASTRAPAY',
+            'success_redirect_url' => 'required_if:ewallet_type,DANA,LINKAJA,SHOPEEPAY,ASTRAPAY|url',
             'mobile_number' => 'required_if:ewallet_type,OVO'
         ]);
 
@@ -72,6 +72,13 @@ class EWalletPaymentController extends Controller
             } elseif ($ewalletType === 'LINKAJA') {
                 $channelCode = 'ID_LINKAJA';
                 $channelProperties['success_redirect_url'] = $request->input('success_redirect_url');
+            } elseif ($ewalletType === 'SHOPEEPAY') {
+                $channelCode = 'ID_SHOPEEPAY';
+                $channelProperties['success_redirect_url'] = $request->input('success_redirect_url');
+            } elseif ($ewalletType === 'ASTRAPAY') {
+                $channelCode = 'ID_ASTRAPAY';
+                $channelProperties['success_redirect_url'] = $request->input('success_redirect_url');
+                $channelProperties['failure_redirect_url'] = $request->input('failure_redirect_url');
             } else {
                 $errors = [
                     'message' => 'Invalid E-wallet type.'
@@ -107,7 +114,16 @@ class EWalletPaymentController extends Controller
                 $trx->payment_timer = 3600; // 1 jam
                 $trx->payment_id = $xenditResponse['reference_id'];
                 $trx->payment_channel = $channelCode;
-                $trx->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
+
+                if ($ewalletType === 'SHOPEEPAY') {
+                    $trx->payment_number = $xenditResponse['actions']['qr_checkout_string'];
+                } elseif ($ewalletType === 'DANA' || $ewalletType === 'LINKAJA' || $ewalletType === 'ASTRAPAY') {
+                    $trx->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
+                    $trx->payment_url = $xenditResponse['actions']['desktop_web_checkout_url'];
+                } else {
+                    $trx->payment_number = $xenditResponse['actions']['mobile_web_checkout_url'];
+                }
+
                 $trx->payment_image = $ewallet->logo;
                 $trx->payment_status = 'UNPAID';
                 $trx->save();
@@ -130,6 +146,8 @@ class EWalletPaymentController extends Controller
             return ResponseFormatter::error($e->getMessage(), 'Failed to select payment method');
         }
     }
+
+
 
     /**
      * Callback for Xendit E-Wallet payment.
