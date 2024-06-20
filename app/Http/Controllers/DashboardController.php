@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Package;
+use App\Models\Transaction;
+use App\Models\CourseQuestion;
+use App\Models\User;
 
 class DashboardController extends Controller
 {
@@ -16,7 +19,24 @@ class DashboardController extends Controller
         $packages = Package::all();
         // hitung jumlah paket yang akan ditampilkan
         $packagesCount = $packages->count();
-        return view('dashboard-new', compact('packages', 'packagesCount'));
+
+        // count transaction with status paid
+        $transactionPaid = Transaction::where('payment_status', 'PAID')->count();
+        $transactionUnpaidAndPending = Transaction::whereIn('payment_status', ['UNPAID', 'PENDING'])->count();
+
+        $totalSoal = CourseQuestion::all()->count();
+
+        $totalUserActive = User::where('status', 'active')->count();
+
+        // user where status is active and verified at != null
+        $totalUserVerified = User::where('status', 'active')->whereNotNull('email_verified_at')->count();
+
+        // total revenue from transaction
+        $totalRevenue = Transaction::where('payment_status', 'PAID')->sum('total_amount');
+
+        return view('dashboard-new',
+            compact('packages', 'packagesCount', 'transactionPaid', 'totalSoal', 'totalUserActive', 'totalUserVerified',
+            'transactionUnpaidAndPending', 'totalRevenue'));
     }
 
     /**

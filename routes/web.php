@@ -16,6 +16,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Models\PackageTryOut;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\BlogController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -133,6 +135,14 @@ Route::middleware('auth')->group(function () {
 
         // payment methods
         Route::resource('payment-methods', PaymentMethodController::class)->middleware('role:teacher');
+
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
+        Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
+        Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+        Route::resource('blogs', BlogController::class);
+
 
         Route::get('/settings', function () {
             return view('dashboard.settings');

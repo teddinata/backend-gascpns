@@ -115,6 +115,22 @@
                     </p>
                 </a>
             </li>
+
+            {{-- notifications --}}
+            <li>
+                <a href="{{ route('dashboard.notifications.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.notifications.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/profile-2user-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.notifications.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Notifikasi
+                    </p>
+                </a>
+            </li>
             @endrole
 
             @role('student')
@@ -172,6 +188,25 @@
             <li>
                 <h3 class="font-bold text-xs text-[#A5ABB2]">OTHERS</h3>
             </li>
+
+            @role('teacher')
+            {{-- blog --}}
+            <li>
+                <a href="{{ route('dashboard.blogs.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.blogs.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/note-favorite-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-newspaper"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.blogs.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Blog
+                    </p>
+                </a>
+            </li>
+
+
             <li>
                 <a href="" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11 transition-all duration-300 hover:bg-[#2B82FE]">
                     <div>
@@ -207,6 +242,7 @@
                     </button>
                 </form>
             </li>
+            @endrole
         </ul>
     </div>
     <a href="">

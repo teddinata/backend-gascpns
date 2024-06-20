@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\RetailOutletPaymentController;
 use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\BlogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,6 +58,8 @@ Route::get('/banks', [PaymentController::class, 'getAvailableBanks']);
 Route::get('/ewallets', [PaymentController::class, 'getAvailableEWallets']);
 Route::get('/payment-instructions/{bank}', [PaymentController::class, 'getPaymentInstructions']);
 
+// route resource blogs
+
 Route::group(['prefix' => 'v1'], function () {
 
     Route::post('register', [AuthController::class, 'register']);
@@ -73,6 +76,8 @@ Route::group(['prefix' => 'v1'], function () {
 
     // route for tryout on sale without auth
     Route::get('tryout/on-sale', [TryOutController::class, 'onSale']);
+
+    Route::apiResource('blog', BlogController::class);
 
     // route middleware auth for user access tryout
     Route::group(['middleware' => ['auth:sanctum']], function () {
@@ -165,6 +170,8 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+
 
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
