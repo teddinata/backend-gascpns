@@ -198,5 +198,10 @@ class User extends Authenticatable
         return $this->hasMany(TryOut::class, 'user_id', 'id');
     }
 
+    public function topUpTransactions()
+    {
+        return $this->hasMany(TopUpTransaction::class, 'user_id', 'id');
+    }
+
 
 }

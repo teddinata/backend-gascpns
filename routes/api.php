@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\TopUpController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +84,10 @@ Route::group(['prefix' => 'v1'], function () {
 
     // route middleware auth for user access tryout
     Route::group(['middleware' => ['auth:sanctum']], function () {
+
+        // dashboard
+        Route::get('/dashboard', [DashboardController::class, 'getDashboardData']);
+
         // route for tryout free
         Route::get('/tryout/free', [TryOutController::class, 'freePackage']);
 

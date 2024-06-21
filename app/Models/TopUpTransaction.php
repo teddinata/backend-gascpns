@@ -24,4 +24,9 @@ class TopUpTransaction extends Model
         'amount' => 'float',
         'payment_response' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
