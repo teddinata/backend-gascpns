@@ -15,6 +15,7 @@
         "mailgun/mailgun-php": "^4.2",
         "realrashid/sweet-alert": "^7.1",
         "spatie/laravel-permission": "^6.4",
+        "spatie/laravel-sluggable": "^3.6",
         "symfony/http-client": "^7.1",
         "symfony/mailgun-mailer": "^7.1",
         "xendit/xendit-php": "2.19"

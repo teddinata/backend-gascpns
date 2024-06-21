@@ -77,6 +77,7 @@ Route::group(['prefix' => 'v1'], function () {
     // route for tryout on sale without auth
     Route::get('tryout/on-sale', [TryOutController::class, 'onSale']);
 
+    Route::get('blog/{slug}', [BlogController::class, 'show']);
     Route::apiResource('blog', BlogController::class);
 
     // route middleware auth for user access tryout

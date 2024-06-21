@@ -38,9 +38,9 @@ class BlogController extends Controller
         return ResponseFormatter::success($blogs, 'Data list blog berhasil diambil');
     }
 
-    public function show($id)
+    public function show($slug)
     {
-        $blog = Blog::findOrFail($id);
+        $blog = Blog::where('slug', $slug)->firstOrFail();
 
         // if have image
         if ($blog->image) {
