@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\BlogController;
+use App\Http\Controllers\Api\TopUpController;
 
 /*
 |--------------------------------------------------------------------------
@@ -172,8 +173,11 @@ Route::group(['prefix' => 'v1'], function () {
         Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
         Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 
-
-
+        Route::post('/topup/create', [TopUpController::class, 'createTransaction']);
+        Route::post('/topup/payment', [TopUpController::class, 'handlePayment']);
+        Route::get('/topup/check', [TopUpController::class, 'checkPaymentStatus']);
+        Route::get('/topup/history', [TopUpController::class, 'topupHistory']);
+        Route::get('/topup/{id}', [TopUpController::class, 'show']);
 
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
         //     ->middleware('auth:sanctum')
