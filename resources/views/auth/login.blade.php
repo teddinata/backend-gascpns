@@ -31,11 +31,11 @@
                     <li>
                         <a href="" class="font-semibold text-white">Help</a>
                     </li>
-                    <li class="h-[52px] flex items-center">
+                    {{-- <li class="h-[52px] flex items-center">
                         <a href="{{ route('register') }}"
                             class="font-semibold text-white p-[14px_30px] bg-[#0A090B] rounded-full text-center">Sign
                             Up</a>
-                    </li>
+                    </li> --}}
                 </ul>
             </div>
         </nav>
