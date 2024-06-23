@@ -27,27 +27,27 @@ class TryOutStudentController extends Controller
             $totalQuestions += $package_tryout->course->questions()->count();
         }
 
-        foreach ($students as $student) {
-            $questions = $student->course->questions()->orderBy('id', 'desc')->get();
-            $totalQuestions = $questions->count();
+        // foreach ($students as $student) {
+        //     $questions = $student->course->questions()->orderBy('id', 'desc')->get();
+        //     $totalQuestions = $questions->count();
 
-            $studentAnswers = StudentAnswer::where('user_id', $student->user_id)
-                ->whereIn('question_id', $questions->pluck('id'))
-                ->get();
+        //     $studentAnswers = StudentAnswer::where('user_id', $student->user_id)
+        //         ->whereIn('question_id', $questions->pluck('id'))
+        //         ->get();
 
-            $answerCount = $studentAnswers->count();
-            $correctAnswerCount = $studentAnswers->where('answer', 5)->count();
+        //     $answerCount = $studentAnswers->count();
+        //     $correctAnswerCount = $studentAnswers->where('answer', 5)->count();
 
-            if ($answerCount == 0) {
-                $student->status = 'Not Started';
-            } elseif ($answerCount < $totalQuestions) {
-                $student->status = 'In Progress';
-            } elseif ($answerCount == $totalQuestions && $correctAnswerCount < $totalQuestions) {
-                $student->status = 'Not Passed';
-            } elseif ($answerCount == $totalQuestions && $correctAnswerCount == $totalQuestions) {
-                $student->status = 'Passed';
-            }
-        }
+        //     if ($answerCount == 0) {
+        //         $student->status = 'Not Started';
+        //     } elseif ($answerCount < $totalQuestions) {
+        //         $student->status = 'In Progress';
+        //     } elseif ($answerCount == $totalQuestions && $correctAnswerCount < $totalQuestions) {
+        //         $student->status = 'Not Passed';
+        //     } elseif ($answerCount == $totalQuestions && $correctAnswerCount == $totalQuestions) {
+        //         $student->status = 'Passed';
+        //     }
+        // }
 
         $title = 'Delete Course!';
         $text = "Are you sure you want to delete?";
