@@ -26,7 +26,7 @@
 
             @if ($student->verified_at == null)
                 <span class="text-red-500">Belum Terverifikasi</span>
-                @else
+            @else
                 <span class="text-green text-green-500">Terverifikasi</span>
             @endif
         </div>
@@ -48,7 +48,7 @@
             <h3 class="text-xl font-medium mb-3">Informasi Akun</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <p class="text-gray-600"><span class="font-semibold">Username:</span> {{ $student->username }}</p>
-                <p class="text-gray-600"><span class="font-semibold">Login Terakhir:</span> {{ $student->last_login ? $student->last_login->diffForHumans() : '-' }}</p>
+                <p class="text-gray-600"><span class="font-semibold">Login Terakhir:</span> {{ $student->last_login ? $student->last_login : '-' }}</p>
                 <p class="text-gray-600"><span class="font-semibold">Saldo Akun:</span> Rp {{ number_format($student->wallet_balance, 0, ',', '.') }}</p>
                 <p class="text-gray-600"><span class="font-semibold">Referral Code:</span> {{ $student->referral_code }}</p>
             </div>
