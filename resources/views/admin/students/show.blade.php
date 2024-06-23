@@ -24,7 +24,7 @@
             alt="Foto Profil" class="w-40 h-40 rounded-full object-cover shadow-lg">
           <h2 class="text-2xl font-semibold mt-5">{{ $student->name }}</h2>
 
-            @if ($student->verified_at == null)
+            @if ($student->email_verified_at == null)
                 <span class="text-red-500">Belum Terverifikasi</span>
             @else
                 <span class="text-green text-green-500">Terverifikasi</span>
