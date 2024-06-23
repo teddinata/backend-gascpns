@@ -63,6 +63,9 @@
         <div class="flex justify-center shrink-0 w-[150px]">
             <p class="text-[#7F8190]">Member Joined</p>
         </div>
+        <div class="flex justify-center shrink-0 w-[150px]">
+            <p class="text-[#7F8190]">Verified at</p>
+        </div>
         <div class="flex justify-center shrink-0 w-[350px]">
             <p class="text-[#7F8190]">Phone Number</p>
         </div>
@@ -92,6 +95,9 @@
         </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
             <p class="font-semibold">{{ $student->created_at->format('d M Y H:i') }}</p>
+        </div>
+        <div class="flex shrink-0 w-[150px] items-center justify-center">
+            <p class="font-semibold">{{ $student->email_verified_at ? $student->email_verified_at->format('d M Y H:i') : '-' }}</p>
         </div>
         <div class="flex shrink-0 w-[350px] items-center justify-center">
             <p class="font-semibold">{{ $student->phone_number ?? '-' }}</p>

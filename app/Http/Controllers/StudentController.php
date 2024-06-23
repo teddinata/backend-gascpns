@@ -17,7 +17,7 @@ class StudentController extends Controller
         // $students = User::where('role', function ($query) {
         //     $query->where('name', 'student');
         // })->paginate(10);
-        $students = User::where('role', 'user')->paginate(10);
+        $students = User::where('role', 'user')->orderBy('created_at', 'desc')->paginate(15);
         $title = 'Delete Student!';
         $text = "Are you sure you want to delete?";
 
@@ -45,6 +45,7 @@ class StudentController extends Controller
      */
     public function show(User $student)
     {
+        // user
         return view('admin.students.show', compact('student'));
     }
 

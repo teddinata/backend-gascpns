@@ -60,7 +60,7 @@ class AuthController extends Controller
             $user = User::firstOrNew(['email' => $request->email]);
             $user->fill([
                 'name' => $request->name,
-                'username' => $request->name,
+                'username' => $request->username,
                 'birthdate' => $request->birthdate,
                 'phone' => $request->phone,
                 'password' => Hash::make($request->password),
