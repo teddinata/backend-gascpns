@@ -100,7 +100,7 @@
             <p class="font-semibold">{{ $student->email_verified_at ? $student->email_verified_at->format('d M Y H:i') : '-' }}</p>
         </div>
         <div class="flex shrink-0 w-[350px] items-center justify-center">
-            <p class="font-semibold">{{ $student->phone_number ?? '-' }}</p>
+            <p class="font-semibold">{{ $student->phone ?? '-' }}</p>
         </div>
         <div class="flex shrink-0 w-[120px] items-center">
             <p class="font-semibold">{{ $student->email }}</p>
