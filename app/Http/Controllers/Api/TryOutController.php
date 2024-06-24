@@ -923,9 +923,15 @@ class TryOutController extends Controller
             }
 
             // Menentukan apakah tryout lulus atau tidak
-            $twkPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 1)->sum('score') >= 85;
-            $tiuPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 2)->sum('score') >= 65;
-            $tkpPass = $tryout->tryout_details->where('courseQuestion.course.category_id', 3)->sum('score') >= 166;
+            $twkScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 1)->sum('score');
+            $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 2)->sum('score');
+            $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 3)->sum('score');
+
+            $twkPass = $twkScore >= 85;
+            $tiuPass = $tiuScore >= 65;
+            $tkpPass = $tkpScore >= 166;
+
+            Log::info("Tryout ID: {$tryout->id}, TWK: {$twkScore}, TIU: {$tiuScore}, TKP: {$tkpScore}, Total: {$totalScore}");
 
             if ($twkPass && $tiuPass && $tkpPass && $totalScore >= 311) {
                 $lulus++;

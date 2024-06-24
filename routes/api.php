@@ -42,6 +42,9 @@ Route::get('/user', function (Request $request) {
         $user->avatar = url('https://ui-avatars.com/api/?name=' . urlencode($user->name));
     }
 
+    $user->referral = $user->referrals->first()->referral_code ?? null;
+    $user->referrer = $user->referredBy->referral_code ?? null;
+
     return response()->json($user);
 })->middleware('auth:sanctum');
 
