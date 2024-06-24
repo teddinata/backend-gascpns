@@ -931,8 +931,6 @@ class TryOutController extends Controller
             $tiuPass = $tiuScore >= 65;
             $tkpPass = $tkpScore >= 166;
 
-            Log::info("Tryout ID: {$tryout->id}, TWK: {$twkScore}, TIU: {$tiuScore}, TKP: {$tkpScore}, Total: {$totalScore}");
-
             if ($twkPass && $tiuPass && $tkpPass && $totalScore >= 311) {
                 $lulus++;
             }
