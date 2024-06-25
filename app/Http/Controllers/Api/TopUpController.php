@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use App\Mail\PaymentEmail;
 use App\Http\Service\XenditService;
 use App\Mail\TopUpEmail;
+use App\Services\NotificationService;
 
 class TopUpController extends Controller
 {
