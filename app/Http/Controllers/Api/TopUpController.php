@@ -17,6 +17,33 @@ use App\Services\NotificationService;
 
 class TopUpController extends Controller
 {
+
+    private function getPaymentId($xenditResponse, $method)
+    {
+        switch ($method) {
+            case 'VA':
+                return $xenditResponse['id'];
+            case 'EWALLET':
+            case 'QRIS':
+                return $xenditResponse['id'];
+            default:
+                throw new \Exception('Unknown payment method');
+        }
+    }
+
+    private function getPaymentToken($xenditResponse, $method)
+    {
+        switch ($method) {
+            case 'VA':
+                return $xenditResponse['external_id'];
+            case 'EWALLET':
+            case 'QRIS':
+                return $xenditResponse['reference_id'];
+            default:
+                throw new \Exception('Unknown payment method');
+        }
+    }
+
     public function createTransaction(Request $request)
     {
         $request->validate([
@@ -58,7 +85,7 @@ class TopUpController extends Controller
                     'name' => "TOPUP GASCPNS " . $user->name,
                     'expected_amount' => $amount,
                     "is_closed" => true,
-                    "expiration_date" => (new Carbon())->addHours(1)->toIso8601String(),
+                    "expiration_date" => now()->addHours(1)->toIso8601String(),
                 ];
                 $xenditResponse = $xenditService->createVa($vaPayloads);
                 $transaction->payment_number = $xenditResponse['account_number'];
@@ -89,7 +116,6 @@ class TopUpController extends Controller
             } elseif ($paymentMethod === 'QRIS') {
                 // Handle QRIS payment
                 $qrisPayloads = [
-                    // 'external_id' => "qris-topup-" . now()->timestamp,
                     'amount' => (int) $amount,
                     'type' => 'DYNAMIC',
                     'reference_id' => "qris-topup-" . now()->timestamp,
@@ -104,9 +130,10 @@ class TopUpController extends Controller
             $transaction->payment_method = $paymentMethod . ($paymentMethod === 'EWALLET' ? '-' . $request->input('ewallet_type') : '') . ($paymentMethod === 'VA' ? '-' . $request->input('bank_code') : '');
             $transaction->payment_channel = $paymentMethod;
             $transaction->payment_response = json_encode($xenditResponse);
+            $transaction->payment_id = $this->getPaymentId($xenditResponse, $paymentMethod);
+            $transaction->payment_token = $this->getPaymentToken($xenditResponse, $paymentMethod);
             $transaction->payment_status = 'UNPAID';
             $transaction->payment_expired = now()->addMinutes(60)->format('Y-m-d H:i:s');
-            // $transaction->payment_expired = (new Carbon())->addHours(1)->toIso8601String();
             $transaction->save();
 
             Mail::to($user->email)->send(new TopUpEmail($user, $transaction));
@@ -121,6 +148,8 @@ class TopUpController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
+
+
 
     // Endpoint untuk cek status pembayaran dari transaction.id
     public function checkPaymentStatus(Request $request)

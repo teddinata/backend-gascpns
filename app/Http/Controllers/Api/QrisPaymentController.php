@@ -59,10 +59,10 @@ class QrisPaymentController extends Controller
             foreach ($transactions as $trx) {
                 $trx->payment_method = $request->payment_method;
                 $trx->payment_response = json_encode($xenditResponse);
-                $trx->payment_token = $xenditResponse['id'];
+                $trx->payment_token = $xenditResponse['reference_id'];
                 $trx->payment_expired = $xenditResponse['expires_at'];
                 $trx->payment_timer = 3600; // 1 jam
-                $trx->payment_id = $xenditResponse['reference_id'];
+                $trx->payment_id = $xenditResponse['id'];
                 $trx->payment_number = $xenditResponse['qr_string'];
                 $trx->payment_status = 'UNPAID';
                 $trx->payment_channel = 'QRIS';

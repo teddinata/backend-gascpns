@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->decimal('amount', 15, 2);
+            $table->string('payment_id')->nullable();
             $table->string('payment_method')->nullable();
             $table->string('payment_status')->default('PENDING');
             $table->string('payment_token')->nullable();
@@ -23,6 +24,8 @@ return new class extends Migration
             $table->string('payment_channel')->nullable();
             $table->timestamp('payment_expired')->nullable();
             $table->longText('payment_response')->nullable();
+            $table->string('payment_date')->nullable();
+            $table->integer('payment_timer')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

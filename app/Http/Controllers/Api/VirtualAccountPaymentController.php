@@ -68,10 +68,10 @@ class VirtualAccountPaymentController extends Controller
             foreach ($transactions as $trx) {
                 $trx->payment_method = $request->bank_code;
                 $trx->payment_response = json_encode($xenditResponse);
-                $trx->payment_token = $xenditResponse['id'];
+                $trx->payment_token = $xenditResponse['external_id'];
                 $trx->payment_expired = $xenditResponse['expiration_date'];
                 $trx->payment_timer = 3600; // 1 jam
-                $trx->payment_id = $xenditResponse['external_id'];
+                $trx->payment_id = $xenditResponse['id'];
                 $trx->payment_number = $xenditResponse['account_number'];
                 $trx->payment_channel = "Virtual Account";
                 $trx->payment_image = $bank->logo;

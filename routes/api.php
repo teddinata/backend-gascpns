@@ -58,6 +58,8 @@ Route::post('/tryout/transactions/va-payment/callback', [VirtualAccountPaymentCo
 Route::post('/tryout/transactions/qris/callback', [QrisPaymentController::class, 'qrisCallback']);
 Route::post('/tryout/transactions/ewallet/callback', [EWalletPaymentController::class, 'ewalletCallback']);
 
+Route::post('/callback/payment', [PaymentController::class, 'unifiedCallback']);
+
 // payment methdods
 Route::get('/banks', [PaymentController::class, 'getAvailableBanks']);
 Route::get('/ewallets', [PaymentController::class, 'getAvailableEWallets']);

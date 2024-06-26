@@ -109,10 +109,10 @@ class EWalletPaymentController extends Controller
             foreach ($transactions as $trx) {
                 $trx->payment_method = $request->payment_method . '-' . $ewalletType;
                 $trx->payment_response = json_encode($xenditResponse);
-                $trx->payment_token = $xenditResponse['id'];
+                $trx->payment_token = $xenditResponse['reference_id'];
                 $trx->payment_expired = now()->addMinutes(15)->format('Y-m-d H:i:s');
                 $trx->payment_timer = 3600; // 1 jam
-                $trx->payment_id = $xenditResponse['reference_id'];
+                $trx->payment_id = $xenditResponse['id'];
                 $trx->payment_channel = $channelCode;
 
                 if ($ewalletType === 'SHOPEEPAY') {
