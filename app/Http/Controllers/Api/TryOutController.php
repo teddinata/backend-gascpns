@@ -989,7 +989,7 @@ class TryOutController extends Controller
     // Fungsi tambahan untuk memproses tryout
     protected function processTryout($tryout, $user, $startedTryouts)
     {
-        $tryout->cover_path = asset('storage/' . $tryout->cover_path);
+        // $tryout->cover_path = asset('storage/' . $tryout->cover_path);
 
         // hitung jumlah siswa yang sudah membeli paket
         $tryout->students_count = $tryout->courseStudents()->count();
