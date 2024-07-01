@@ -817,7 +817,7 @@ class TryOutController extends Controller
         $usersPaginated = $usersQuery->with(['tryouts' => function ($query) use ($packageId) {
             $query->where('package_id', $packageId)->where('status', 2);
             $query->with('tryout_details.courseQuestion.course.category');
-        }])->paginate(2);
+        }])->paginate(10);
 
         // Mengonstruksi data rankings
         $rankings = $usersPaginated->map(function ($user, $key) use ($usersPaginated) {
