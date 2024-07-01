@@ -804,24 +804,33 @@ class TryOutController extends Controller
         // Ambil parameter pencarian nama jika ada
         $searchName = $request->input('search_name', '');
 
-        // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang dipilih dan sesuai dengan nama pencarian
+        // Menggunakan subquery untuk menghitung total skor
         $usersQuery = User::whereHas('tryouts', function ($query) use ($packageId) {
-            $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
-        });
+            $query->where('package_id', $packageId)->where('status', 2);
+        })->with(['tryouts' => function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2);
+            $query->with('tryout_details.courseQuestion.course.category');
+        }]);
 
         if (!empty($searchName)) {
             $usersQuery->where('name', 'like', '%' . $searchName . '%');
         }
 
-        // Dapatkan pengguna dengan pagination
-        $usersPaginated = $usersQuery->with(['tryouts' => function ($query) use ($packageId) {
-            $query->where('package_id', $packageId)->where('status', 2);
-            $query->with('tryout_details.courseQuestion.course.category');
-        }])->paginate(10);
+        // Menambahkan subquery untuk skor total dan mengurutkan berdasarkan itu
+        $usersQuery->withSum('tryouts.tryout_details', 'score')
+            ->orderByDesc('tryouts_tryout_details_sum_score');
 
-        // Mengonstruksi data rankings
+        // Dapatkan pengguna dengan pagination
+        $usersPaginated = $usersQuery->paginate(2);
+
+        // Konstruksi data peringkat
         $rankings = $usersPaginated->map(function ($user, $key) use ($usersPaginated) {
             $tryout = $user->tryouts->first();
+
+            if (!$tryout) {
+                return null;
+            }
+
             $totalScore = $tryout->tryout_details->sum('score');
             $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
             $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
@@ -837,7 +846,7 @@ class TryOutController extends Controller
                 'total' => $totalScore,
                 'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus',
             ];
-        });
+        })->filter();
 
         // Membuat response yang diinginkan
         return response()->json([
@@ -863,6 +872,7 @@ class TryOutController extends Controller
             ]
         ]);
     }
+
 
 
     // endpoint all package tryout
