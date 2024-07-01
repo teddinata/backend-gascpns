@@ -814,77 +814,56 @@ class TryOutController extends Controller
         }
 
         // Dapatkan pengguna dengan pagination
-        $users = $usersQuery->paginate(10);
+        $usersPaginated = $usersQuery->with(['tryouts' => function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2);
+            $query->with('tryout_details.courseQuestion.course.category');
+        }])->paginate(2);
 
-        // Inisialisasi array untuk menyimpan data peringkat
-        $rankings = [];
-
-        $lulus = 0; // Counter untuk tryout yang lulus
-
-        // Loop melalui setiap pengguna
-        foreach ($users as $user) {
-            // Ambil tryout pengguna dari paket tryout yang dipilih
-            $tryout = $user->tryouts()->where('package_id', $packageId)->where('status', 2)->first();
-
-            if (!$tryout) {
-                continue; // Skip jika tidak ada tryout yang sesuai
-            }
-
-            $totalScore = 0;
-            foreach ($tryout->tryout_details as $detail) {
-                $totalScore += $detail->score;
-            }
-
-            // Hitung skor berdasarkan kategori soal
+        // Mengonstruksi data rankings
+        $rankings = $usersPaginated->map(function ($user, $key) use ($usersPaginated) {
+            $tryout = $user->tryouts->first();
+            $totalScore = $tryout->tryout_details->sum('score');
             $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
             $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
             $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
-            // Menentukan apakah tryout lulus atau tidak
-            // $twkScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 1)->sum('score') >= 85;
-            // $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 2)->sum('score') >= 65;
-            // $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category_id', 3)->sum('score') >= 166;
 
-            if ($twkScore && $tiuScore && $tkpScore && $totalScore >= 311) {
-                $lulus++;
-            }
-
-            // Hitung total skor
-            // $totalScore = $twkScore + $tiuScore + $tkpScore;
-
-            // Tambahkan data peringkat ke dalam array rankings
-            $rankings[] = [
-                'rank' => count($rankings) + 1,
+            return [
+                'rank' => $usersPaginated->firstItem() + $key,
                 'name' => $user->name,
-                'provinsi' => $user->provinsi, // Ganti dengan atribut yang sesuai
+                'provinsi' => $user->provinsi,
                 'twk' => $twkScore,
                 'tiu' => $tiuScore,
                 'tkp' => $tkpScore,
                 'total' => $totalScore,
-                'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus', // Ganti dengan kriteria kelulusan yang sesuai
+                'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus',
             ];
-        }
-
-        // Urutkan peringkat berdasarkan skor total
-        usort($rankings, function ($a, $b) {
-            return $b['total'] <=> $a['total'];
         });
 
-        // Tambahkan nomor peringkat setelah diurutkan
-        foreach ($rankings as $index => $ranking) {
-            $rankings[$index]['rank'] = $index + 1;
-        }
-
-        // Paginate the rankings array manually
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $perPage = 10;
-        $currentItems = array_slice($rankings, ($currentPage - 1) * $perPage, $perPage);
-        $paginatedRankings = new LengthAwarePaginator($currentItems, count($rankings), $perPage, $currentPage, [
-            'path' => LengthAwarePaginator::resolveCurrentPath()
+        // Membuat response yang diinginkan
+        return response()->json([
+            'meta' => [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data peringkat berhasil diambil'
+            ],
+            'data' => [
+                'current_page' => $usersPaginated->currentPage(),
+                'data' => $rankings,
+                'first_page_url' => $usersPaginated->url(1),
+                'from' => $usersPaginated->firstItem(),
+                'last_page' => $usersPaginated->lastPage(),
+                'last_page_url' => $usersPaginated->url($usersPaginated->lastPage()),
+                'links' => $usersPaginated->linkCollection(),
+                'next_page_url' => $usersPaginated->nextPageUrl(),
+                'path' => $usersPaginated->path(),
+                'per_page' => $usersPaginated->perPage(),
+                'prev_page_url' => $usersPaginated->previousPageUrl(),
+                'to' => $usersPaginated->lastItem(),
+                'total' => $usersPaginated->total(),
+            ]
         ]);
-
-        // Kembalikan data peringkat dalam bentuk respons JSON
-        return ResponseFormatter::success($paginatedRankings, 'Data peringkat berhasil diambil');
     }
+
 
     // endpoint all package tryout
     public function allPackageTryout()
