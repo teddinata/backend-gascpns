@@ -17,6 +17,7 @@ use App\Models\CourseAnswer;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Response;
 
 class TryOutController extends Controller
 {
@@ -792,52 +793,46 @@ class TryOutController extends Controller
 
     // show ranking for all user tryout by package
     public function rankingsByPackage(Request $request)
-    {
-        // Validasi input
-        $request->validate([
-            'package_id' => 'required|exists:packages,id',
-        ]);
+{
+    // Validasi input
+    $request->validate([
+        'package_id' => 'required|exists:packages,id',
+    ]);
 
-        // Ambil ID paket tryout dari permintaan
-        $packageId = $request->input('package_id');
+    // Ambil ID paket tryout dari permintaan
+    $packageId = $request->input('package_id');
 
-        // Ambil parameter pencarian nama jika ada
-        $searchName = $request->input('search_name', '');
+    // Ambil parameter pencarian nama jika ada
+    $searchName = $request->input('search_name', '');
 
-        // Menggunakan subquery untuk menghitung total skor
-        $usersQuery = User::whereHas('tryouts', function ($query) use ($packageId) {
-            $query->where('package_id', $packageId)->where('status', 2);
-        })->with(['tryouts' => function ($query) use ($packageId) {
-            $query->where('package_id', $packageId)->where('status', 2);
-            $query->with('tryout_details.courseQuestion.course.category');
-        }]);
+    // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang dipilih dan sesuai dengan nama pencarian
+    $users = User::whereHas('tryouts', function ($query) use ($packageId) {
+        $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
+    })->with(['tryouts' => function ($query) use ($packageId) {
+        $query->where('package_id', $packageId)->where('status', 2)
+              ->with('tryout_details.courseQuestion.course.category');
+    }])->get();
 
-        if (!empty($searchName)) {
-            $usersQuery->where('name', 'like', '%' . $searchName . '%');
-        }
+    if (!empty($searchName)) {
+        $users = $users->filter(function ($user) use ($searchName) {
+            return false !== stripos($user->name, $searchName);
+        });
+    }
 
-        // Menambahkan subquery untuk skor total dan mengurutkan berdasarkan itu
-        $usersQuery->withSum('tryouts.tryout_details', 'score')
-            ->orderByDesc('tryouts_tryout_details_sum_score');
+    // Inisialisasi array untuk menyimpan data peringkat
+    $rankings = [];
 
-        // Dapatkan pengguna dengan pagination
-        $usersPaginated = $usersQuery->paginate(2);
-
-        // Konstruksi data peringkat
-        $rankings = $usersPaginated->map(function ($user, $key) use ($usersPaginated) {
-            $tryout = $user->tryouts->first();
-
-            if (!$tryout) {
-                return null;
-            }
-
+    // Loop melalui setiap pengguna
+    foreach ($users as $user) {
+        $tryouts = $user->tryouts;
+        foreach ($tryouts as $tryout) {
             $totalScore = $tryout->tryout_details->sum('score');
             $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
             $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
             $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
 
-            return [
-                'rank' => $usersPaginated->firstItem() + $key,
+            // Tambahkan data peringkat ke dalam array rankings
+            $rankings[] = [
                 'name' => $user->name,
                 'provinsi' => $user->provinsi,
                 'twk' => $twkScore,
@@ -846,32 +841,43 @@ class TryOutController extends Controller
                 'total' => $totalScore,
                 'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus',
             ];
-        })->filter();
-
-        // Membuat response yang diinginkan
-        return response()->json([
-            'meta' => [
-                'code' => 200,
-                'status' => 'success',
-                'message' => 'Data peringkat berhasil diambil'
-            ],
-            'data' => [
-                'current_page' => $usersPaginated->currentPage(),
-                'data' => $rankings,
-                'first_page_url' => $usersPaginated->url(1),
-                'from' => $usersPaginated->firstItem(),
-                'last_page' => $usersPaginated->lastPage(),
-                'last_page_url' => $usersPaginated->url($usersPaginated->lastPage()),
-                'links' => $usersPaginated->linkCollection(),
-                'next_page_url' => $usersPaginated->nextPageUrl(),
-                'path' => $usersPaginated->path(),
-                'per_page' => $usersPaginated->perPage(),
-                'prev_page_url' => $usersPaginated->previousPageUrl(),
-                'to' => $usersPaginated->lastItem(),
-                'total' => $usersPaginated->total(),
-            ]
-        ]);
+        }
     }
+
+    // Urutkan peringkat berdasarkan skor total
+    usort($rankings, function ($a, $b) {
+        return $b['total'] <=> $a['total'];
+    });
+
+    // Tambahkan nomor peringkat setelah diurutkan
+    foreach ($rankings as $index => &$ranking) {
+        $ranking['rank'] = $index + 1;
+    }
+
+    // Manual pagination of the rankings
+    $perPage = 10;
+    $page = $request->input('page', 1);
+    $page = (int) $request->input('page', 1);
+
+    // Calculate the offset for the current page
+    $offset = ($page - 1) * $perPage;
+
+    // Create a LengthAwarePaginator instance with the sliced array segment
+    $paginatedRankings = new LengthAwarePaginator(array_slice($rankings, $offset, $perPage, true), count($rankings), $perPage, $page, [
+        'path' => $request->url(),
+        'query' => $request->query(),
+    ]);
+
+    // Return the structured response
+    return response()->json([
+        'meta' => [
+            'code' => 200,
+            'status' => 'success',
+            'message' => 'Data peringkat berhasil diambil'
+        ],
+        'data' => $paginatedRankings
+    ]);
+}
 
 
 
