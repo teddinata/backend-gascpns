@@ -793,91 +793,102 @@ class TryOutController extends Controller
 
     // show ranking for all user tryout by package
     public function rankingsByPackage(Request $request)
-{
-    // Validasi input
-    $request->validate([
-        'package_id' => 'required|exists:packages,id',
-    ]);
+    {
+        // Validasi input
+        $request->validate([
+            'package_id' => 'required|exists:packages,id',
+        ]);
 
-    // Ambil ID paket tryout dari permintaan
-    $packageId = $request->input('package_id');
+        // Ambil ID paket tryout dari permintaan
+        $packageId = $request->input('package_id');
 
-    // Ambil parameter pencarian nama jika ada
-    $searchName = $request->input('search_name', '');
+        // Ambil parameter pencarian nama jika ada
+        $searchName = $request->input('search_name', '');
 
-    // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang dipilih dan sesuai dengan nama pencarian
-    $users = User::whereHas('tryouts', function ($query) use ($packageId) {
-        $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
-    })->with(['tryouts' => function ($query) use ($packageId) {
-        $query->where('package_id', $packageId)->where('status', 2)
-              ->with('tryout_details.courseQuestion.course.category');
-    }])->get();
+        // Ambil semua pengguna yang mengikuti tryout dari paket tryout yang dipilih dan sesuai dengan nama pencarian
+        $users = User::whereHas('tryouts', function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2); // Pastikan tryout sudah selesai
+        })->with(['tryouts' => function ($query) use ($packageId) {
+            $query->where('package_id', $packageId)->where('status', 2)
+                ->with('tryout_details.courseQuestion.course.category');
+        }])->get();
 
-    if (!empty($searchName)) {
-        $users = $users->filter(function ($user) use ($searchName) {
-            return false !== stripos($user->name, $searchName);
-        });
-    }
-
-    // Inisialisasi array untuk menyimpan data peringkat
-    $rankings = [];
-
-    // Loop melalui setiap pengguna
-    foreach ($users as $user) {
-        $tryouts = $user->tryouts;
-        foreach ($tryouts as $tryout) {
-            $totalScore = $tryout->tryout_details->sum('score');
-            $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
-            $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
-            $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
-
-            // Tambahkan data peringkat ke dalam array rankings
-            $rankings[] = [
-                'name' => $user->name,
-                'provinsi' => $user->provinsi,
-                'twk' => $twkScore,
-                'tiu' => $tiuScore,
-                'tkp' => $tkpScore,
-                'total' => $totalScore,
-                'keterangan' => $totalScore >= 311 ? 'Lulus' : 'Tidak Lulus',
-            ];
+        if (!empty($searchName)) {
+            $users = $users->filter(function ($user) use ($searchName) {
+                return false !== stripos($user->name, $searchName);
+            });
         }
+
+        // Inisialisasi array untuk menyimpan data peringkat
+        $rankings = [];
+        $totalLulus = 0;
+        $totalTidakLulus = 0;
+
+        foreach ($users as $user) {
+            foreach ($user->tryouts as $tryout) {
+                $totalScore = $tryout->tryout_details->sum('score');
+                $twkScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TWK')->sum('score');
+                $tiuScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TIU')->sum('score');
+                $tkpScore = $tryout->tryout_details->where('courseQuestion.course.category.name', 'TKP')->sum('score');
+
+                // Check individual scores against minimum requirements
+                $keterangan = $totalScore >= 311 && $twkScore >= 65 && $tiuScore >= 80 && $tkpScore >= 166 ? 'Lulus' : 'Tidak Lulus';
+
+                if ($keterangan === 'Lulus') {
+                    $totalLulus++;
+                } else {
+                    $totalTidakLulus++;
+                }
+
+                $rankings[] = [
+                    'name' => $user->name,
+                    'provinsi' => $user->provinsi,
+                    'twk' => $twkScore,
+                    'tiu' => $tiuScore,
+                    'tkp' => $tkpScore,
+                    'total' => $totalScore,
+                    'keterangan' => $keterangan,
+                ];
+            }
+        }
+
+        // Urutkan peringkat berdasarkan skor total
+        usort($rankings, function ($a, $b) {
+            return $b['total'] <=> $a['total'];
+        });
+
+        // Tambahkan nomor peringkat setelah diurutkan
+        foreach ($rankings as $index => &$ranking) {
+            $ranking['rank'] = $index + 1;
+        }
+
+        // Manual pagination of the rankings
+        $perPage = 10;
+        $page = $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
+
+        // Calculate the offset for the current page
+        $offset = ($page - 1) * $perPage;
+
+        // Create a LengthAwarePaginator instance with the sliced array segment
+        $paginatedRankings = new LengthAwarePaginator(array_slice($rankings, $offset, $perPage, true), count($rankings), $perPage, $page, [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]);
+
+        // Return the structured response
+        return response()->json([
+            'meta' => [
+                'code' => 200,
+                'status' => 'success',
+                'message' => 'Data peringkat berhasil diambil'
+            ],
+            'data' => $paginatedRankings,
+            'total_participants' => count($rankings),
+            'passed_participants' => $totalLulus,
+            'failed_participants' => $totalTidakLulus
+        ]);
     }
-
-    // Urutkan peringkat berdasarkan skor total
-    usort($rankings, function ($a, $b) {
-        return $b['total'] <=> $a['total'];
-    });
-
-    // Tambahkan nomor peringkat setelah diurutkan
-    foreach ($rankings as $index => &$ranking) {
-        $ranking['rank'] = $index + 1;
-    }
-
-    // Manual pagination of the rankings
-    $perPage = 10;
-    $page = $request->input('page', 1);
-    $page = (int) $request->input('page', 1);
-
-    // Calculate the offset for the current page
-    $offset = ($page - 1) * $perPage;
-
-    // Create a LengthAwarePaginator instance with the sliced array segment
-    $paginatedRankings = new LengthAwarePaginator(array_slice($rankings, $offset, $perPage, true), count($rankings), $perPage, $page, [
-        'path' => $request->url(),
-        'query' => $request->query(),
-    ]);
-
-    // Return the structured response
-    return response()->json([
-        'meta' => [
-            'code' => 200,
-            'status' => 'success',
-            'message' => 'Data peringkat berhasil diambil'
-        ],
-        'data' => $paginatedRankings
-    ]);
-}
 
 
 
