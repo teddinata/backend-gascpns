@@ -98,7 +98,7 @@
             <p class="font-semibold italic">{{ $student->email_verified_at ? $student->email_verified_at->format('d M Y H:i') : '-' }}</p>
         </div>
         <div class="flex w-[200px] items-center justify-center">
-            <p class="font-semibold">{{ $student->last_login ? $student->last_login : '-' }}</p>
+            <p class="font-semibold"> {{ $student->last_login ? \Carbon\Carbon::parse($student->last_login)->format('d M Y H:i') : '-' }}</p>
         </div>
         <div class="flex shrink-0 w-[350px] items-center justify-center">
             <p class="font-semibold">{{ $student->phone ?? '-' }}</p>
