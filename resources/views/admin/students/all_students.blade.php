@@ -61,10 +61,10 @@
             <p class="text-[#7F8190]">Name  (Username)</p>
         </div>
         <div class="flex justify-center shrink-0 w-[150px]">
-            <p class="text-[#7F8190]">Member Joined</p>
+            <p class="text-[#7F8190]">Member Joined (Verified at)</p>
         </div>
-        <div class="flex justify-center shrink-0 w-[150px]">
-            <p class="text-[#7F8190]">Verified at</p>
+        <div class="flex justify-center shrink-0 w-[200px]">
+            <p class="text-[#7F8190]">Last login</p>
         </div>
         <div class="flex justify-center shrink-0 w-[350px]">
             <p class="text-[#7F8190]">Phone Number</p>
@@ -93,11 +93,12 @@
                 </div>
             </div>
         </div>
-        <div class="flex shrink-0 w-[150px] items-center justify-center">
-            <p class="font-semibold">{{ $student->created_at->format('d M Y H:i') }}</p>
+        <div class="flex flex-col gap-2 shrink-0 w-[150px] items-center justify-center">
+            <p class="font-normal italic">{{ $student->created_at->format('d M Y H:i') }}</p>
+            <p class="font-semibold italic">{{ $student->email_verified_at ? $student->email_verified_at->format('d M Y H:i') : '-' }}</p>
         </div>
-        <div class="flex shrink-0 w-[150px] items-center justify-center">
-            <p class="font-semibold">{{ $student->email_verified_at ? $student->email_verified_at->format('d M Y H:i') : '-' }}</p>
+        <div class="flex w-[200px] items-center justify-center">
+            <p class="font-semibold">{{ $student->last_login ? $student->last_login : '-' }}</p>
         </div>
         <div class="flex shrink-0 w-[350px] items-center justify-center">
             <p class="font-semibold">{{ $student->phone ?? '-' }}</p>
