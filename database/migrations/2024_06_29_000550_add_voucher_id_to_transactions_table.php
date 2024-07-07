@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('transactions', function (Blueprint $table) {
             //
-            // $table->foreignId('voucher_id')->nullable()->constrained('vouchers');
+            $table->foreignId('voucher_id')->nullable()->constrained('vouchers');
             // $table->decimal('discount_amount', 8, 2)->default(0);
             $table->integer('discount_amount')->default(0);
         });
