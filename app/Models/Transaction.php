@@ -34,7 +34,8 @@ class Transaction extends Model
         'payment_number',
         'original_price',
         'discount_price',
-
+        'discount_amount',
+        'voucher_id',
     ];
 
     public function student()
@@ -55,5 +56,10 @@ class Transaction extends Model
     public function details()
     {
         return $this->hasMany(TransactionDetail::class, 'transaction_id');
+    }
+
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class);
     }
 }

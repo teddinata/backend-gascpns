@@ -116,6 +116,22 @@
                 </a>
             </li>
 
+            {{-- vouchers --}}
+            <li>
+                <a href="{{ route('dashboard.vouchers.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11
+                    {{ request()->routeIs('dashboard.vouchers.*') ? 'bg-[#2B82FE] hover:bg-[#2B82FE] text-white' : 'bg-[#FFFFFF] hover:bg-[#2B82FE] text-[#0c0f13]' }}
+                    transition-all duration-300 hover:bg-[#2B82FE]">
+                    <div>
+                        {{-- <img src="{{ asset('images/icons/note-favorite-outline.svg') }}" alt="icon"> --}}
+                        <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <p class="font-semibold transition-all duration-300
+                        {{ request()->routeIs('dashboard.vouchers.*') ? 'hover:text-white' : 'text-[#000000] hover:text-white' }}">
+                        Voucher
+                    </p>
+                </a>
+            </li>
+
             {{-- notifications --}}
             <li>
                 <a href="{{ route('dashboard.notifications.index') }}" class="p-[10px_16px] flex items-center gap-[14px] rounded-full h-11

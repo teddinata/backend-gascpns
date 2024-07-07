@@ -24,6 +24,7 @@ use App\Services\NotificationService;
 use App\Mail\AccessGranted;
 use App\Mail\SuccessEmail;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Voucher;
 
 class TransactionController extends Controller
 {
@@ -317,6 +318,116 @@ class TransactionController extends Controller
         return ResponseFormatter::success($transaction, 'Transaction detail');
     }
 
+    // vouchers list
+    public function vouchers()
+    {
+        $vouchers = Voucher::where('is_active', 1)
+            ->where('valid_from', '<=', Carbon::now())
+            ->where('valid_to', '>=', Carbon::now())
+            ->get();
+
+        return ResponseFormatter::success($vouchers, 'Vouchers list');
+    }
+
+    public function applyVoucher(Request $request)
+    {
+        $request->validate([
+            'voucher_code' => 'required|string',
+            'transaction_ids' => 'required|array',
+            'transaction_ids.*' => 'exists:transactions,id',
+        ]);
+
+        $voucher = Voucher::where('code', $request->voucher_code)
+            ->where('is_active', 1)
+            ->where('valid_from', '<=', Carbon::now())
+            ->where('valid_to', '>=', Carbon::now())
+            ->first();
+
+        if (!$voucher) {
+            return response()->json(['error' => 'Voucher tidak valid atau sudah kadaluarsa'], 422);
+        }
+
+        if ($voucher->usage_limit && $voucher->transactions()->count() >= $voucher->usage_limit) {
+            return response()->json(['error' => 'Voucher sudah mencapai batas penggunaan'], 422);
+        }
+
+        $transactions = Transaction::whereIn('id', $request->transaction_ids)->get();
+
+        // Calculate the total amount based on original_price or discount_price
+        $totalAmount = $transactions->reduce(function ($acc, $trx) {
+            return $acc + ($trx->discount_price ?? $trx->original_price);
+        }, 0);
+
+        if ($voucher->min_purchase && $totalAmount < $voucher->min_purchase) {
+            return response()->json(['error' => 'Total pembelian tidak memenuhi syarat minimum penggunaan voucher'], 422);
+        }
+
+        $discountAmount = 0;
+
+        if ($voucher->discount_type == 'percentage') {
+            $discountAmount = ($voucher->discount_amount / 100) * $totalAmount;
+        } else if ($voucher->discount_type == 'fixed') {
+            $discountAmount = $voucher->discount_amount;
+        }
+
+        if ($voucher->max_discount && $discountAmount > $voucher->max_discount) {
+            $discountAmount = $voucher->max_discount;
+        }
+
+        $finalAmount = $totalAmount - $discountAmount;
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($transactions as $trx) {
+                // Calculate the proportion of discount for each transaction
+                $originalOrDiscountPrice = $trx->discount_price ?? $trx->original_price;
+                $proportion = $originalOrDiscountPrice / $totalAmount;
+                $trxDiscountAmount = $discountAmount * $proportion;
+
+                // Update transaction
+                $trx->discount_amount = $trxDiscountAmount;
+                $trx->voucher_id = $voucher->id;
+                $trx->voucher_code = $voucher->code;
+                $trx->total_amount = $originalOrDiscountPrice - $trxDiscountAmount;
+                $trx->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $finalAmount,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to apply voucher'], 500);
+        }
+    }
+
+    public function getAppliedVoucher(Request $request)
+    {
+        $request->validate([
+            'transaction_ids' => 'required|array',
+            'transaction_ids.*' => 'exists:transactions,id',
+        ]);
+
+        $transactions = Transaction::whereIn('id', $request->transaction_ids)->get();
+
+        $appliedVouchers = $transactions->map(function ($trx) {
+            return [
+                'id' => $trx->voucher_id,
+                'code' => $trx->voucher_code,
+                'discount_amount' => $trx->discount_amount,
+            ];
+        })->unique('id')->values();
+
+        return response()->json([
+            'success' => true,
+            'vouchers' => $appliedVouchers,
+        ]);
+    }
 
     /**
      * Show the form for editing the specified resource.

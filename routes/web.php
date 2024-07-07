@@ -18,6 +18,7 @@ use App\Http\Controllers\PaymentMethodController;
 use App\Models\PackageTryOut;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\BlogController;
+use App\Http\Controllers\VoucherController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -140,6 +141,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/notifications/create', [NotificationController::class, 'create'])->name('notifications.create');
         Route::post('/notifications', [NotificationController::class, 'store'])->name('notifications.store');
         Route::delete('/notifications/{id}', [NotificationController::class, 'destroy'])->name('notifications.destroy');
+
+        // route vouchers
+        Route::resource('vouchers', VoucherController::class);
 
         Route::resource('blogs', BlogController::class);
 

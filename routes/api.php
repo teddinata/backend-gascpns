@@ -189,6 +189,11 @@ Route::group(['prefix' => 'v1'], function () {
         Route::get('/topup/history', [TopUpController::class, 'topupHistory']);
         Route::get('/topup/{id}', [TopUpController::class, 'show']);
 
+        // vouchers list
+        Route::get('/vouchers', [TransactionController::class, 'vouchers']);
+        Route::post('/apply-voucher', [TransactionController::class, 'applyVoucher']);
+        Route::get('/vouchers/applied', [TransactionController::class, 'getAppliedVoucher']);
+
         // Route::post('/tryout/{tryoutId}/question/{questionId}/answer', [TryoutController::class, 'answerQuestion'])
         //     ->middleware('auth:sanctum')
         //     ->name('tryout.answer');
