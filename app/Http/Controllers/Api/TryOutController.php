@@ -1100,6 +1100,11 @@ class TryOutController extends Controller
             return ResponseFormatter::error(null, 'Anda sudah mengklaim paket ini', 400);
         }
 
+        // check apakah sale end date sudah lewat atau belum jika sudah lewat maka tidak bisa claim
+        if ($package->sale_end_date < now()) {
+            return ResponseFormatter::error(null, 'Yah, kamu telat. Tryout ini sudah tidak tersedia lagi', 400);
+        }
+
         // Klaim paket untuk user
         $user->enrolledPackageTryouts()->attach($packageId, ['created_by' => $user->id]);
         // $student->packages()->attach($package->id, ['created_by' => '1 ']);
