@@ -152,9 +152,9 @@ class PaymentController extends Controller
         $student->packages()->attach($package->id, ['created_by' => '1 ']);
 
         Mail::to($student->email)->send(new AccessGranted($student, $transaction));
-        NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+        NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://app.gascpns.com/member/my-tryout');
 
-        NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
+        NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://app.gascpns.com/member/riwayat-transaksi');
         Mail::to($user->email)->send(new SuccessEmail($user, $transaction));
     }
 }

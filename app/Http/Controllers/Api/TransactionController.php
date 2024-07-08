@@ -249,14 +249,14 @@ class TransactionController extends Controller
                 $student = $trx->student;
                 $student->packages()->attach($trx->package_id, ['created_by' => $user->id]);
 
-                NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $trx->package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+                NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $trx->package->name . '.', 'https://app.gascpns.com/member/my-tryout');
                 Mail::to($student->email)->send(new AccessGranted($student, $trx));
             }
 
             $user->wallet_balance -= $totalAmount;
             $user->save();
 
-            NotificationService::sendNotification($user->id, 'Pembelian Paket Berhasil', 'Pembelian paket menggunakan saldo berhasil. Saldo Anda saat ini Rp' . $user->wallet_balance, 'https://staging.gascpns.com/member/my-tryout');
+            NotificationService::sendNotification($user->id, 'Pembelian Paket Berhasil', 'Pembelian paket menggunakan saldo berhasil. Saldo Anda saat ini Rp' . $user->wallet_balance, 'https://app.gascpns.com/member/my-tryout');
             Mail::to($user->email)->send(new SuccessEmail($user, $transactions->first()));
 
             DB::commit();

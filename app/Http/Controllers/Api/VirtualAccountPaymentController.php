@@ -81,7 +81,7 @@ class VirtualAccountPaymentController extends Controller
 
             Mail::to($user->email)->send(new PaymentEmail($user, $transactions->first()));
 
-            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . now()->parse($transactions->first()->payment_expired)->setTimezone('Asia/Jakarta')->format('d F Y H:i:s'), 'https://staging.gascpns.com/member/riwayat-transaksi');
+            NotificationService::sendNotification($user->id, 'Menunggu Pembayaran', 'Pembelian paket menunggu pembayaran. Silakan lakukan pembayaran sebelum ' . now()->parse($transactions->first()->payment_expired)->setTimezone('Asia/Jakarta')->format('d F Y H:i:s'), 'https://app.gascpns.com/member/riwayat-transaksi');
 
             $responseData = [
                 'transaction_ids' => $request->transaction_ids,
@@ -138,13 +138,13 @@ class VirtualAccountPaymentController extends Controller
             Mail::to($student->email)->send(new AccessGranted($student, $trx));
 
             // Send notification to student
-            NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://staging.gascpns.com/member/my-tryout');
+            NotificationService::sendNotification($student->id, 'Akses Paket', 'Anda telah mendapatkan akses ke paket ' . $package->name . '.', 'https://app.gascpns.com/member/my-tryout');
         }
 
         // Mail to user
         Mail::to($user->email)->send(new SuccessEmail($user, $firstTransaction));
         // Send notification to user
-        NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://staging.gascpns.com/member/riwayat-transaksi');
+        NotificationService::sendNotification($user->id, 'Pembayaran Berhasil', 'Pembelian paket ' . $package->name . ' telah berhasil.', 'https://app.gascpns.com/member/riwayat-transaksi');
 
     }
 
