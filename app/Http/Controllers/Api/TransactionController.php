@@ -106,7 +106,9 @@ class TransactionController extends Controller
                 $student = User::where('email', $email)->first();
 
                 if (!$student) {
-                    throw new \Exception('Email ' . $email . ' not found');
+                    return ResponseFormatter::error([
+                        'message' => 'Email ' . $email . ' belum terdaftar sebagai user',
+                    ], 'Email ' . $email . ' belum terdaftar sebagai user', 422);
                 }
 
                 if ($student->packages()->where('package_tryout_id', $package->id)->exists()) {
@@ -347,7 +349,11 @@ class TransactionController extends Controller
             return response()->json(['error' => 'Voucher tidak valid atau sudah kadaluarsa'], 422);
         }
 
-        if ($voucher->usage_limit && $voucher->transactions()->count() >= $voucher->usage_limit) {
+        $usedVoucherCount = $voucher->transactions()
+            ->whereIn('payment_status', ['PENDING', 'UNPAID', 'SUCCESS'])
+            ->count();
+
+        if ($voucher->usage_limit && $usedVoucherCount >= $voucher->usage_limit) {
             return response()->json(['error' => 'Voucher sudah mencapai batas penggunaan'], 422);
         }
 
