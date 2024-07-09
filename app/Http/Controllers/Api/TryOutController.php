@@ -1101,7 +1101,7 @@ class TryOutController extends Controller
         }
 
         // check apakah sale end date sudah lewat atau belum jika sudah lewat maka tidak bisa claim
-        if ($package->sale_end_date < now()) {
+        if ($package->sale_end_at < now()) {
             return ResponseFormatter::error(null, 'Yah, kamu telat. Tryout ini sudah tidak tersedia lagi', 400);
         }
 
