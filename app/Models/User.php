@@ -178,15 +178,15 @@ class User extends Authenticatable
         return $this->belongsToMany(Package::class, 'course_students', 'user_id', 'package_tryout_id');
     }
 
-    public function referrals()
-    {
-        return $this->hasMany(Referral::class, 'referred_by');
-    }
+     public function referrals()
+     {
+         return $this->hasMany(Referral::class, 'referred_by');
+     }
 
-    public function referrer()
-    {
-        return $this->belongsTo(User::class, 'referred_by');
-    }
+     public function referrer()
+     {
+         return $this->hasOne(Referral::class, 'user_id');
+     }
 
     public function transactions()
     {

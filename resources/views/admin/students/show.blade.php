@@ -60,6 +60,37 @@
             </div> --}}
         </div>
 
+        <div class="bg-white p-6 rounded-md shadow-md mt-5">
+            <h3 class="text-xl font-medium mb-3">Informasi Pengajak</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-600">
+                    <span class="font-semibold">Diajukan oleh: </span>
+                    {{ $student->referrer->referredBy->name ?? 'Tidak ada' }}
+                </p>
+            </div>
+
+            <h3 class="text-xl font-medium mt-5 mb-3">Informasi Rujukan</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <p class="text-gray-600">
+                    <span class="font-semibold">Total Referrals: </span>
+                    {{ $student->referrals->count() }}
+                </p>
+                <div class="text-gray-600">
+                    <span class="font-semibold">User Referrals: </span>
+                    <ul class="list-disc pl-5 mt-2">
+                        @forelse ($student->referrals as $referral)
+                            <li>{{ $referral->user->name }}</li>
+                        @empty
+                            <li>Tidak ada</li>
+                        @endforelse
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+
+
+
         {{-- <div class="bg-white p-6 rounded-md shadow-md mt-5">
           <h3 class="text-xl font-medium mb-3">Informasi Akademik</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

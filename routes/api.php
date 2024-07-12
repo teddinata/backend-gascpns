@@ -35,18 +35,40 @@ Route::get('/user', function (Request $request) {
         return response()->json(['message' => 'User not authenticated'], 401);
     }
 
-    // if user has avatar
+    // Menambahkan avatar
     if ($user->avatar) {
         $user->avatar = url('storage/' . $user->avatar);
     } else {
         $user->avatar = url('https://ui-avatars.com/api/?name=' . urlencode($user->name));
     }
 
-    $user->referral = $user->referrals->first()->referral_code ?? null;
-    $user->referrer = $user->referredBy->referral_code ?? null;
+    // Menambahkan referral code dan referrer code
+    $user->referrals = $user->referrals->map(function ($referral) {
+        return [
+            'id' => $referral->id,
+            'name' => $referral->user->name,
+            'email' => $referral->email,
+            'referral_code' => $referral->referral_code,
+
+        ];
+    });
+    // $user->referrer = $user->referredBy;
+
+    // Menambahkan informasi referrals dan referred by
+    // $user->referrals_list = $user->referrals->map(function ($referral) {
+    //     return [
+    //         'id' => $referral->id,
+    //         'name' => $referral->name,
+    //         'email' => $referral->email,
+    //         'referral_code' => $referral->referral_code,
+    //     ];
+    // });
+
+    $user->referrer = $user->referrer->referredBy;
 
     return response()->json($user);
 })->middleware('auth:sanctum');
+
 
 
 Route::get('provinces', [LocationController::class, 'getProvinces']);
