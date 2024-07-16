@@ -74,9 +74,6 @@ class PaymentController extends Controller
             abort(403);
         }
 
-        // Log payload dari Xendit untuk debugging
-        // Log::info('Xendit Callback: ' . json_encode($request->all()));
-
         if (isset($request->callback_virtual_account_id)) {
             $this->handleVACallback($request);
         } elseif (isset($request->data['qr_id'])) {
@@ -84,7 +81,6 @@ class PaymentController extends Controller
         } elseif ($request->event == "ewallet.capture") {
             $this->handleEwalletCallback($request);
         } else {
-            // Log error jika jenis transaksi tidak dikenali
             abort(400, 'Invalid callback data');
         }
     }
@@ -111,25 +107,27 @@ class PaymentController extends Controller
     {
         $identifierValue = $this->getIdentifierValue($request, $identifier);
 
-        $transaction = $modelClass::where('payment_id', $identifierValue)->first();
+        $transactions = $modelClass::where('payment_id', $identifierValue)->get();
 
-        if (!$transaction) {
-            return; // Skip if transaction is not found for this model
+        if ($transactions->isEmpty()) {
+            return; // Skip if no transactions are found for this model
         }
 
-        $transaction->payment_status = "PAID";
-        $transaction->payment_response = json_encode($request->all());
-        $transaction->payment_date = now();
-        $transaction->save();
+        foreach ($transactions as $transaction) {
+            $transaction->payment_status = "PAID";
+            $transaction->payment_response = json_encode($request->all());
+            $transaction->payment_date = now();
+            $transaction->save();
 
-        if ($modelClass === TopUpTransaction::class) {
-            $user = $transaction->user;
-            $user->wallet_balance += $transaction->amount;
-            $user->save();
+            if ($modelClass === TopUpTransaction::class) {
+                $user = $transaction->user;
+                $user->wallet_balance += $transaction->amount;
+                $user->save();
 
-            NotificationService::sendNotification($user->id, 'Top-Up Berhasil', 'Saldo sebesar Rp' . number_format($transaction->amount, 0, ',', '.') . ' telah ditambahkan ke akun Anda.', 'https://app.gascpns.com/member/riwayat-transaksi');
-        } else {
-            $this->handleTransactionCallback($transaction, $request);
+                NotificationService::sendNotification($user->id, 'Top-Up Berhasil', 'Saldo sebesar Rp' . number_format($transaction->amount, 0, ',', '.') . ' telah ditambahkan ke akun Anda.', 'https://app.gascpns.com/member/riwayat-transaksi');
+            } else {
+                $this->handleTransactionCallback($transaction, $request);
+            }
         }
     }
 
