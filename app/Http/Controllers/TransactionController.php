@@ -12,7 +12,15 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        //
+        // Update status menjadi EXPIRED untuk transaksi yang memenuhi kondisi
+        Transaction::where('payment_expired', '<', now())
+            ->where(function ($query) {
+                $query->where('payment_status', 'UNPAID')
+                    ->orWhere('payment_status', 'PENDING');
+            })
+            ->update(['payment_status' => 'EXPIRED']);
+
+        // Buat query untuk mendapatkan transaksi
         $query = Transaction::query();
 
         // Filter berdasarkan invoice code jika ada
@@ -25,12 +33,13 @@ class TransactionController extends Controller
             $query->where('payment_status', $request->payment_status);
         }
 
-        // Anda dapat menambahkan filter tambahan sesuai kebutuhan, seperti nama paket, tanggal pembayaran, dll.
-
+        // Dapatkan transaksi dengan paginasi
         $transactions = $query->with('details')->orderBy('created_at', 'DESC')->paginate(10);
 
         return view('admin.transactions.index', compact('transactions'));
     }
+
+
 
     /**
      * Show the form for creating a new resource.

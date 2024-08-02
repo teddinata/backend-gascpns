@@ -45,6 +45,9 @@
         <div class="flex shrink-0 w-[200px]">
             <p class="text-[#7F8190]">Kode Transaksi</p>
         </div>
+        <div class="flex shrink-0 w-[200px]">
+            <p class="text-[#7F8190]">Nama Pembeli</p>
+        </div>
         <div class="flex justify-center shrink-0 w-[150px]">
             <p class="text-[#7F8190]">Total Pembayaran</p>
         </div>
@@ -66,6 +69,9 @@
         <div class="flex shrink-0 w-[200px]">
             <p class="font-semibold">{{ $transaction->invoice_code }}</p>
         </div>
+        <div class="flex shrink-0 w-[200px]">
+            <p>{{ $transaction->student->name }}</p>
+        </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
             <p>Rp{{ number_format($transaction->total_amount, 0, ',', '.') }}</p>
         </div>
@@ -82,6 +88,8 @@
             <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $transaction->payment_status }}</p>
             @elseif ($transaction->payment_status == 'EXPIRED')
             <p class="p-[8px_16px] rounded-full bg-[#dad6d6] font-bold text-sm text-[#6b6b6b]">{{ $transaction->payment_status }}</p>
+            @elseif ($transaction->payment_status == 'UNPAID')
+            <p class="p-[8px_16px] rounded-full bg-[#FEE2E2] font-bold text-sm text-[#EB5757]">{{ $transaction->payment_status }}</p>
             @endif
         </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
