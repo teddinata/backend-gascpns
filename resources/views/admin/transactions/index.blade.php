@@ -87,9 +87,11 @@
             @elseif ($transaction->payment_status == 'PENDING')
             <p class="p-[8px_16px] rounded-full bg-[#FFF2E6] font-bold text-sm text-[#F6770B]">{{ $transaction->payment_status }}</p>
             @elseif ($transaction->payment_status == 'EXPIRED')
-            <p class="p-[8px_16px] rounded-full bg-[#dad6d6] font-bold text-sm text-[#6b6b6b]">{{ $transaction->payment_status }}</p>
+            <p class="p-[8px_16px] rounded-full bg-[#dad6d6] font-bold text-sm text-[#6b6b6b]">CANCELLED by System</p>
             @elseif ($transaction->payment_status == 'UNPAID')
             <p class="p-[8px_16px] rounded-full bg-[#FEE2E2] font-bold text-sm text-[#EB5757]">{{ $transaction->payment_status }}</p>
+            @elseif ($transaction->payment_status == 'CANCELLED')
+            <p class="p-[8px_16px] rounded-full bg-[#FEE2E2] font-bold text-sm text-[#EB5757]">CANCELLED by User</p>
             @endif
         </div>
         <div class="flex shrink-0 w-[150px] items-center justify-center">
